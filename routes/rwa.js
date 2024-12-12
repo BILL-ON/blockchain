@@ -86,4 +86,80 @@ router.get('/my-assets', authenticateToken, async (req, res) => {
     }
 })
 
+router.post('/create-sell-offer', authenticateToken, async (req, res) => {
+    try {
+
+        const { tokenID, amount, seed } = req.body;
+        const walletAddress = req.user.walletAddress;
+        
+        const sellOfferTx = {
+            TransactionType: "NFTokenCreateOffer",
+            Account: walletAddress,
+            NFTokenID: tokenID,
+            Amount: amount,
+            Flags: 1
+        };
+
+        const wallet = xrpl.Wallet.fromSeed(seed);
+        const signedTx = await client.submitAndWait(sellOfferTx, { wallet });
+
+        res.json({
+            offerID: signedTx.result.offer_id,
+            transaction: signedTx.result
+        })
+    } catch (error) {
+        console.error("ERROR when offer was created: ", error);
+        res.status(500).json({
+            error: "Failed to create sell offer"
+        })
+    }
+})
+
+router.post('/list-sell-offers', authenticateToken, async (req, res) => {
+    try {
+        const { tokenID } = req.body;
+
+        rwaselloffers = await client.request({
+            method: "nft_sell_offers",
+            nft_id: tokenID
+        })
+
+        res.json({
+            RWAselloffers: rwaselloffers
+        });
+
+    } catch (error) {
+        console.log("NO sell offers for you nfttttt !")
+        res.status(200).json({
+            msg: "no sell offers!!"
+        })
+    }
+})
+
+router.post('/accept-sell-offer', authenticateToken , async (req, res) => {
+    try {
+
+        const { nft_offer_index, seed } = req.body;
+        const walletAddress = req.user.walletAddress;
+        
+        const acceptSellOfferTx = {
+            TransactionType: "NFTokenAcceptOffer",
+            Account: walletAddress,
+            NFTokenSellOffer: nft_offer_index
+        }
+
+        const wallet = xrpl.Wallet.fromSeed(seed);
+        const signedTx = await client.submitAndWait(acceptSellOfferTx, { wallet });
+        res.json({
+            res: JSON.stringify(signedTx.result.meta.TransactionResult, null, 2)
+        })
+    } catch (error) {
+        console.error("Error when accepting sell offer", error);
+        res.status(500).json({
+            error: error
+        })
+    }
+
+})
+
 module.exports = router;
