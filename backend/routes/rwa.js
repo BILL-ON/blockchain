@@ -149,7 +149,8 @@ router.post('/list-sell-offers', authenticateToken, async (req, res) => {
         })
 
         res.json({
-            RWAselloffers: rwaselloffers
+            RWAselloffers: rwaselloffers.result.offers,
+            TokenID: rwaselloffers.result.nft_id
         });
 
     } catch (error) {

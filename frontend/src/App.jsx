@@ -2,8 +2,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
-import Marketplace from './pages/Marketplace';
-import Myassets from './pages/Myassets';
+import MySellOffers from './pages/MySellOffers';
+import Myassets from './pages/Myassets/Myassets';
 import NFTDetails from './pages/NFTDetails';
 import CreateRWA from './pages/CreateRWA';
 import Login from './components/Login';
@@ -16,7 +16,7 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/my-sell-offers" element={<MySellOffers />} />
           <Route path="/myassets" element={<Myassets />} />
           <Route path="/nft/:id" element={<NFTDetails />} />
           <Route path="/login" element={<Login />} />

@@ -16,9 +16,6 @@ function Navbar() {
       </Link>
       
       <div style={{ display: 'flex', gap: '1rem' }}>
-        <Link to="/marketplace" style={{ textDecoration: 'none', color: 'black' }}>
-          Marketplace
-        </Link>
         <Link to="/register" style={{ textDecoration: 'none', color: 'black' }}>
           Register
         </Link>
@@ -30,6 +27,9 @@ function Navbar() {
         </Link>
         <Link to="/myassets" style={{ textDecoration: 'none', color: 'black' }}>
           My assets
+        </Link>
+        <Link to="/my-sell-offers" style={{ textDecoration: 'none', color: 'black' }}>
+          My sell-offers
         </Link>
       </div>
     </nav>
