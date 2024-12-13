@@ -196,4 +196,41 @@ router.post('/accept-sell-offer', authenticateToken , async (req, res) => {
 })
 
 
+router.post('/cancel-sell-offer', authenticateToken, async (req, res) => {
+    try {
+
+        const { tokenOfferId, seed } = req.body;
+
+        if ( !tokenOfferId) {
+            console.error("Missing fields!")
+            res.status(400).json({
+                error: "Missing fields"
+            })
+            return
+        }
+        const wallet = xrpl.Wallet.fromSeed(seed);
+        
+        const cancelOfferTx = {
+            TransactionType: "NFTokenCancelOffer",
+            Account: wallet.classicAddress,
+            NFTokenOffers: [tokenOfferId],
+        };
+
+        const response = await client.submitAndWait(cancelOfferTx, { wallet });
+
+        console.log
+
+        res.json({
+            success: true,
+            transaction: response.result.meta.TransactionResult
+        })
+    } catch (error) {
+        console.error("ERROR when offer was cancelled: ", error);
+        res.status(500).json({
+            error: "Failed to cancel offer"
+        })
+    }
+})
+
+
 module.exports = router;

@@ -4,12 +4,10 @@ bla bla bla
 
 ## Requirements
 
-- mongoDB is required
 - nodejs / npm
 - .env {
     PORT=???
     JWT_SECRET=???
-    MONGODB_URI=mongodb://localhost:27017/xrpl_platform
 }
 
 RUN : 
