@@ -39,10 +39,16 @@ router.post('/create', authenticateToken , async (req, res) => {
         const wallet = xrpl.Wallet.fromSeed(seed);
         const signedTx = await client.submitAndWait(tokenTx, { wallet });
 
-        res.json({
-            tokenId: signedTx.result.TokenID,
-            metadata
-        });
+        if (signedTx.result.meta.TransactionResult === 'tesSUCCESS') {
+            res.json({
+                tokenId: signedTx.result.TokenID,
+                metadata
+            });
+        } else {
+            res.status(500).json({
+                error: response.result.meta.TransactionResult
+            })
+        }
     } catch (error) {
         console.error('RWA creation error : ', error)
         res.status(500).json({
@@ -184,9 +190,17 @@ router.post('/accept-sell-offer', authenticateToken , async (req, res) => {
 
         const wallet = xrpl.Wallet.fromSeed(seed);
         const signedTx = await client.submitAndWait(acceptSellOfferTx, { wallet });
-        res.json({
-            res: JSON.stringify(signedTx.result.meta.TransactionResult, null, 2)
-        })
+
+        if (signedTx.result.meta.TransactionResult === 'tesSUCCESS') {
+            res.json({
+                res: signedTx.result.meta.TransactionResult
+            })
+        } else {
+            res.status(500).json({
+                error: signedTx.result.meta.TransactionResult
+            })
+        }
+
     } catch (error) {
         console.error("Error when accepting sell offer", error);
         res.status(500).json({
@@ -219,12 +233,18 @@ router.post('/cancel-sell-offer', authenticateToken, async (req, res) => {
 
         const response = await client.submitAndWait(cancelOfferTx, { wallet });
 
-        console.log
 
-        res.json({
-            success: true,
-            transaction: response.result.meta.TransactionResult
-        })
+        if (response.result.meta.TransactionResult === 'tesSUCCESS') {
+            res.json({
+                success: true,
+                transaction: response.result.meta.TransactionResult
+            })
+        } else {
+            res.status(500).json({
+                error: response.result.meta.TransactionResult
+            })
+        }
+
     } catch (error) {
         console.error("ERROR when offer was cancelled: ", error);
         res.status(500).json({
