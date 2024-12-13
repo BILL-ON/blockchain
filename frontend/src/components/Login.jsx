@@ -1,6 +1,7 @@
 // src/pages/Login.jsx
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ip } from '../ip'
 
 const Login = () => {
   const navigate = useNavigate()
@@ -20,8 +21,10 @@ const Login = () => {
     setIsLoading(true)
     setError('')
 
+    console.log(ip)
+
     try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
+      const response = await fetch(`${ip}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

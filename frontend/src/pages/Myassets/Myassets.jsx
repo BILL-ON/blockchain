@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ip } from '../../ip'
 
 const MyAssets = () => {
   const navigate = useNavigate()
@@ -17,7 +18,7 @@ const MyAssets = () => {
 
   const fetchAssets = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/rwa/my-assets', {
+      const response = await fetch(`${ip}/api/rwa/my-assets`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -41,7 +42,7 @@ const MyAssets = () => {
     setIsCreatingOffer(true)
 
     try {
-      const response = await fetch('http://localhost:3000/api/rwa/create-sell-offer', {
+      const response = await fetch(`${ip}/api/rwa/create-sell-offer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

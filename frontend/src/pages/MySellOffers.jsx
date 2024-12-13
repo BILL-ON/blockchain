@@ -1,5 +1,7 @@
 // src/pages/MyNFTsAndOffers.jsx
 import { useState, useEffect } from 'react'
+import { ip } from '../ip'
+
 
 const MyNFTsAndOffers = () => {
   const [nfts, setNfts] = useState([])
@@ -13,7 +15,7 @@ const MyNFTsAndOffers = () => {
   const fetchNFTs = async () => {
     try {
       // Fetch NFTs
-      const nftResponse = await fetch('http://localhost:3000/api/rwa/my-assets', {
+      const nftResponse = await fetch(`${ip}/api/rwa/my-assets`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -28,7 +30,7 @@ const MyNFTsAndOffers = () => {
       const nftsWithOffers = await Promise.all(
         nftData.assets.map(async (nft) => {
           try {
-            const offerResponse = await fetch('http://localhost:3000/api/rwa/list-sell-offers', {
+            const offerResponse = await fetch(`${ip}/api/rwa/list-sell-offers`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -61,7 +63,7 @@ const MyNFTsAndOffers = () => {
 
   const handleCancelOffer = async (tokenOfferId, seed) => {
     try {
-      const response = await fetch('http://localhost:3000/api/rwa/cancel-sell-offer', {
+      const response = await fetch(`${ip}/api/rwa/cancel-sell-offer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
