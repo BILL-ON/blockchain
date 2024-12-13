@@ -31,6 +31,9 @@ function Navbar() {
         <Link to="/my-sell-offers" style={{ textDecoration: 'none', color: 'black' }}>
           My sell-offers
         </Link>
+        <Link to="/TokenSearch" style={{ textDecoration: 'none', color: 'black' }}>
+          Search token
+        </Link>
       </div>
     </nav>
   );
