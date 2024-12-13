@@ -235,6 +235,67 @@ paths:
                     type: string
               example:
                 error: "Creation failed"
+  
+  /api/rwa/my-assets:
+    get:
+      summary: Retrieve user's assets (RWAs)
+      tags:
+        - RWAs
+      description: Fetches a list of the user's Real World Assets (RWAs) associated with their wallet address.
+      security:
+        - bearerAuth: []  # Requires JWT token
+      responses:
+        '200':
+          description: Successfully fetched the user's RWAs.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assets:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tokenId:
+                          type: string
+                        name:
+                          type: string
+                        description:
+                          type: string
+                        valuation:
+                          type: number
+                        properties:
+                          type: object
+                          properties:
+                            location:
+                              type: string
+                            size:
+                              type: string
+                        error:
+                          type: string
+              example:
+                assets: 
+                  - tokenId: "abc123"
+                    name: "Building A"
+                    description: "A commercial real estate property"
+                    valuation: 1000000
+                    properties:
+                      location: "New York"
+                      size: "5000 sqft"
+                  - tokenId: "xyz789"
+                    error: "No URI"
+        '500':
+          description: Internal server error while fetching assets.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Failed to fetch assets"
 
 
 components:
