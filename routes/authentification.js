@@ -2,20 +2,12 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const xrpl = require('xrpl')
-const User = require('../models/User');
 const client = require('../config/xrplConnect');
 
 router.post('/create-wallet', async (req, res) => {
     try {
         const wallet = xrpl.Wallet.generate();
         await client.fundWallet(wallet);
-
-        const user = new User({
-            walletAddress: wallet.address,
-            publicKey: wallet.publicKey
-        })
-
-        await user.save()
 
         const token = jwt.sign(
             { walletAddress: wallet.address },
@@ -53,14 +45,6 @@ router.post('/login', async (req, res) => {
         }
 
         const wallet = xrpl.Wallet.fromSeed(seed);
-
-        const user = await User.findOne({ walletAddress: wallet.address });
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                error: 'Wallet does not exist in database'
-            })
-        }
 
         const token = jwt.sign(
             { walletAddress: wallet.address },
