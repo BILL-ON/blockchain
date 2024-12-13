@@ -130,6 +130,48 @@ router.post('/modify', authenticateToken, async (req, res) => {
     }
 })
 
+router.delete('/:id', authenticateToken, async (req, res) => {
+    try {
+        const tokenId = req.params.id;
+        const { seed } = req.body;
+        const walletAddress = req.user.walletAddress;
+
+        if (!seed) {
+            console.error("Missing seed!")
+            res.status(400).json({
+                error: "Missing seed"
+            })
+            return
+        }
+
+        const tokenTx = {
+            TransactionType: 'NFTokenBurn',
+            Account: walletAddress,
+            NFTokenID: tokenId
+        };
+
+        const wallet = xrpl.Wallet.fromSeed(seed);
+        await client.connect();
+        const signedTx = await client.submitAndWait(tokenTx, { wallet });
+        await client.disconnect();
+
+        if (signedTx.result.meta.TransactionResult === 'tesSUCCESS') {
+            return {
+                tokenId
+            };
+        } else {
+            throw new Error(signedTx.result.meta.TransactionResult);
+        }
+
+
+    } catch (error) {
+        console.error('Error when deleting token ', error);
+        res.status(500).json({
+            error: 'Failed to fetch assets'
+        })
+    }
+})
+
 router.get('/my-assets', authenticateToken, async (req, res) => {
     try {
         const rwas = await client.request({
