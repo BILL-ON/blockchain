@@ -8,6 +8,14 @@ router.post('/create', authenticateToken , async (req, res) => {
     try {
         const { name, description, valuation, location, size, seed } = req.body;
         const walletADdress = req.user.walletAddress;
+
+        if ( !name || !description || !valuation || !location || !size || !seed) {
+            console.error("Missing fields!")
+            res.status(400).json({
+                error: "Missing fields"
+            })
+            return
+        }
         
         const metadata = {
             name,
@@ -91,6 +99,14 @@ router.post('/create-sell-offer', authenticateToken, async (req, res) => {
 
         const { tokenID, amount, seed } = req.body;
         const walletAddress = req.user.walletAddress;
+
+        if ( !tokenID || !amount || !seed || !walletAddress) {
+            console.error("Missing fields!")
+            res.status(400).json({
+                error: "Missing fields"
+            })
+            return
+        }
         
         const sellOfferTx = {
             TransactionType: "NFTokenCreateOffer",
@@ -119,6 +135,14 @@ router.post('/list-sell-offers', authenticateToken, async (req, res) => {
     try {
         const { tokenID } = req.body;
 
+        if ( !tokenID) {
+            console.error("Missing fields!")
+            res.status(400).json({
+                error: "Missing fields"
+            })
+            return
+        }
+
         rwaselloffers = await client.request({
             method: "nft_sell_offers",
             nft_id: tokenID
@@ -141,6 +165,15 @@ router.post('/accept-sell-offer', authenticateToken , async (req, res) => {
 
         const { nft_offer_index, seed } = req.body;
         const walletAddress = req.user.walletAddress;
+
+        if ( !nft_offer_index || !seed) {
+            console.error("Missing fields!")
+            res.status(400).json({
+                error: "Missing fields"
+            })
+            return
+        }
+
         
         const acceptSellOfferTx = {
             TransactionType: "NFTokenAcceptOffer",
@@ -161,5 +194,6 @@ router.post('/accept-sell-offer', authenticateToken , async (req, res) => {
     }
 
 })
+
 
 module.exports = router;
