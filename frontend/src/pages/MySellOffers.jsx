@@ -75,7 +75,6 @@ const MyNFTsAndOffers = () => {
 
       if (response.ok) {
         // Refresh the NFTs and offers
-        console.log("INNNNNNN")
         fetchNFTs()
       } else {
         const data = await response.json()
