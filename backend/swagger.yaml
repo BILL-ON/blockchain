@@ -126,3 +126,120 @@ paths:
                 success: false
                 error: "Invalid seed"
 
+  /api/rwa/create:
+    post:
+      summary: Create a new RWA token
+      tags:
+        - RWAs
+      description: Mints a new RWA (Real World Asset) token by creating metadata and submitting the transaction to the XRP ledger.
+      security:
+        - bearerAuth: []  # Indicates the use of JWT token for authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - description
+                - valuation
+                - location
+                - size
+                - seed
+              properties:
+                name:
+                  type: string
+                  description: Name of the RWA.
+                description:
+                  type: string
+                  description: Description of the RWA.
+                valuation:
+                  type: number
+                  description: Valuation of the RWA.
+                location:
+                  type: string
+                  description: Location of the RWA.
+                size:
+                  type: string
+                  description: Size of the RWA.
+                seed:
+                  type: string
+                  description: The seed of the XRP wallet used for signing the transaction.
+            example:
+              name: "Building A"
+              description: "A commercial real estate property"
+              valuation: 1000000
+              location: "New York"
+              size: "5000 sqft"
+              seed: "s████████████████████████████"
+      responses:
+        '200':
+          description: Successfully created the RWA token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tokenId:
+                    type: string
+                    description: The token ID of the newly created RWA.
+                  metadata:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      description:
+                        type: string
+                      valuation:
+                        type: number
+                      properties:
+                        type: object
+                        properties:
+                          location:
+                            type: string
+                          size:
+                            type: string
+                      createdAt:
+                        type: string
+                        format: date-time
+              example:
+                tokenId: "abc123456"
+                metadata:
+                  name: "Building A"
+                  description: "A commercial real estate property"
+                  valuation: 1000000
+                  properties:
+                    location: "New York"
+                    size: "5000 sqft"
+                  createdAt: "2024-12-13T00:00:00Z"
+        '400':
+          description: Missing required fields in the request body.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Missing fields"
+        '500':
+          description: Internal server error when creating the RWA token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Creation failed"
+
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT  # Specifies that the token format is JWT
