@@ -25,8 +25,11 @@ function Navbar() {
         <Link to="/login" style={{ textDecoration: 'none', color: 'black' }}>
           Login
         </Link>
-        <Link to="/profile" style={{ textDecoration: 'none', color: 'black' }}>
-          Profile
+        <Link to="/createRWA" style={{ textDecoration: 'none', color: 'black' }}>
+          Create RWA
+        </Link>
+        <Link to="/myassets" style={{ textDecoration: 'none', color: 'black' }}>
+          My assets
         </Link>
       </div>
     </nav>
