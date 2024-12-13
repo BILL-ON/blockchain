@@ -297,6 +297,284 @@ paths:
               example:
                 error: "Failed to fetch assets"
 
+  /api/rwa/create-sell-offer:
+    post:
+      summary: Create a new sell offer for an RWA token
+      tags:
+        - OfferRWAs
+      description: Creates a sell offer for an existing RWA token on the XRP ledger.
+      security:
+        - bearerAuth: []  # Requires JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tokenID
+                - amount
+                - seed
+              properties:
+                tokenID:
+                  type: string
+                  description: The ID of the token being offered for sale.
+                amount:
+                  type: number
+                  description: The amount to sell the token for.
+                seed:
+                  type: string
+                  description: The seed of the wallet used to sign the transaction.
+            example:
+              tokenID: "abc123"
+              amount: 500000
+              seed: "s████████████████████████████"
+      responses:
+        '200':
+          description: Successfully created the sell offer.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  offerID:
+                    type: string
+                    description: The ID of the created sell offer.
+                  transaction:
+                    type: object
+                    description: The full transaction details.
+              example:
+                offerID: "offer123456"
+                transaction:
+                  TransactionType: "NFTokenCreateOffer"
+                  Account: "rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv"
+                  Amount: 500000
+                  Flags: 1
+        '400':
+          description: Missing required fields in the request body.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Missing fields"
+        '500':
+          description: Internal server error when creating the sell offer.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Failed to create sell offer"
+
+  /api/rwa/list-sell-offers:
+    post:
+      summary: List sell offers for a specific RWA token
+      tags:
+        - OfferRWAs
+      description: Retrieves a list of sell offers for a specific RWA token from the XRP ledger.
+      security:
+        - bearerAuth: []  # Requires JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tokenID
+              properties:
+                tokenID:
+                  type: string
+                  description: The ID of the token for which sell offers are being requested.
+            example:
+              tokenID: "abc123"
+      responses:
+        '200':
+          description: Successfully fetched the list of sell offers.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  OfferRWAselloffers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        offerID:
+                          type: string
+                          description: The ID of the sell offer.
+                        amount:
+                          type: number
+                          description: The amount for which the RWA token is being sold.
+                  TokenID:
+                    type: string
+                    description: The ID of the token for which sell offers were fetched.
+              example:
+                OfferRWAselloffers:
+                  - offerID: "offer123"
+                    amount: 500000
+                TokenID: "abc123"
+        '400':
+          description: Missing required `tokenID` in the request body.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Missing fields"
+        '500':
+          description: No sell offers found for the specified RWA token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+              example:
+                msg: "no sell offers!!"
+
+  /api/rwa/accept-sell-offer:
+    post:
+      summary: Accept a sell offer for an RWA token
+      tags:
+        - OfferRWAs
+      description: Accepts an existing sell offer for an RWA token by its offer index.
+      security:
+        - bearerAuth: []  # Requires JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nft_offer_index
+                - seed
+              properties:
+                nft_offer_index:
+                  type: string
+                  description: The index of the sell offer to be accepted.
+                seed:
+                  type: string
+                  description: The seed of the wallet used to sign the transaction.
+            example:
+              nft_offer_index: "offer123"
+              seed: "s████████████████████████████"
+      responses:
+        '200':
+          description: Successfully accepted the sell offer.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  res:
+                    type: string
+                    description: The result of the transaction.
+              example:
+                res: "tesSUCCESS"
+        '400':
+          description: Missing required `nft_offer_index` or `seed` in the request body.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Missing fields"
+        '500':
+          description: Internal server error when accepting the sell offer.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Error when accepting sell offer"
+
+  /api/rwa/cancel-sell-offer:
+    post:
+      summary: Cancel a sell offer for an RWA token
+      tags:
+        - OfferRWAs
+      description: Cancels an existing sell offer for an RWA token by its offer ID.
+      security:
+        - bearerAuth: []  # Requires JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tokenOfferId
+                - seed
+              properties:
+                tokenOfferId:
+                  type: string
+                  description: The ID of the sell offer to be canceled.
+                seed:
+                  type: string
+                  description: The seed of the wallet used to sign the transaction.
+            example:
+              tokenOfferId: "offer123"
+              seed: "s████████████████████████████"
+      responses:
+        '200':
+          description: Successfully canceled the sell offer.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Indicates whether the cancellation was successful.
+                  transaction:
+                    type: string
+                    description: The result of the transaction.
+              example:
+                success: true
+                transaction: "tesSUCCESS"
+        '400':
+          description: Missing required `tokenOfferId` in the request body.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Missing fields"
+        '500':
+          description: Internal server error when canceling the sell offer.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Failed to cancel offer"
+
 
 components:
   securitySchemes:
