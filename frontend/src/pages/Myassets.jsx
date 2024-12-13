@@ -1,10 +1,15 @@
-// src/pages/MyAssets.jsx
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const MyAssets = () => {
+  const navigate = useNavigate()
   const [assets, setAssets] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [selectedAsset, setSelectedAsset] = useState(null)
+  const [sellAmount, setSellAmount] = useState('')
+  const [seed, setSeed] = useState('')
+  const [isCreatingOffer, setIsCreatingOffer] = useState(false)
 
   useEffect(() => {
     fetchAssets()
@@ -31,54 +36,58 @@ const MyAssets = () => {
       setIsLoading(false)
     }
   }
+  const handleCreateOffer = async (e) => {
+    e.preventDefault()
+    setIsCreatingOffer(true)
 
-  if (isLoading) {
-    return (
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
-        Loading your assets...
-      </div>
-    )
+    try {
+      const response = await fetch('http://localhost:3000/api/rwa/create-sell-offer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          tokenID: selectedAsset.tokenId,
+          amount: sellAmount,
+          seed
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setSelectedAsset(null)
+        setSellAmount('')
+        setSeed('')
+        alert('Sell offer created successfully!')
+      } else {
+        setError(data.error || 'Failed to create sell offer')
+      }
+    } catch (err) {
+      setError('Failed to create sell offer')
+    } finally {
+      setIsCreatingOffer(false)
+    }
   }
 
-  if (error) {
-    return (
-      <div style={{ 
-        textAlign: 'center', 
-        padding: '2rem',
-        color: 'red' 
-      }}>
-        {error}
-      </div>
-    )
-  }
-
-  if (assets.length === 0) {
-    return (
-      <div style={{ 
-        textAlign: 'center', 
-        padding: '2rem',
-        color: '#666' 
-      }}>
-        You don't have any assets yet
-      </div>
-    )
-  }
+  // ... your existing loading and error states ...
 
   return (
-    <div style={{ 
-      maxWidth: '1200px', 
+    <div style={{
+      maxWidth: '1200px',
       margin: '2rem auto',
-      padding: '0 1rem' 
+      padding: '0 1rem'
     }}>
       <h2 style={{ marginBottom: '2rem' }}>My Assets</h2>
-
-      <div style={{ 
+      
+      <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
         gap: '2rem'
       }}>
         {assets.map(asset => (
-          <div 
+          <div
             key={asset.tokenId}
             style={{
               border: '1px solid #ddd',
@@ -94,7 +103,7 @@ const MyAssets = () => {
             ) : (
               <>
                 <h3 style={{ marginBottom: '1rem' }}>{asset.name}</h3>
-                <p style={{ 
+                <p style={{
                   color: '#666',
                   marginBottom: '1rem',
                   height: '3em',
@@ -103,7 +112,7 @@ const MyAssets = () => {
                 }}>
                   {asset.description}
                 </p>
-                <div style={{ 
+                <div style={{
                   display: 'grid',
                   gridTemplateColumns: '1fr 1fr',
                   gap: '0.5rem',
@@ -126,7 +135,7 @@ const MyAssets = () => {
                     {new Date(asset.createdAt).toLocaleDateString()}
                   </div>
                 </div>
-                <div style={{ 
+                <div style={{
                   marginTop: '1rem',
                   padding: '0.5rem',
                   backgroundColor: '#f9f9f9',
@@ -136,11 +145,130 @@ const MyAssets = () => {
                 }}>
                   <strong>Token ID:</strong> {asset.tokenId}
                 </div>
+                
+                {/* New Create Sell Offer Button */}
+                <button
+                  onClick={() => setSelectedAsset(asset)}
+                  style={{
+                    width: '100%',
+                    marginTop: '1rem',
+                    padding: '0.75rem',
+                    backgroundColor: '#000',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Create Sell Offer
+                </button>
               </>
             )}
           </div>
         ))}
       </div>
+
+      {/* Sell Offer Modal */}
+      {selectedAsset && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: '#fff',
+            padding: '2rem',
+            borderRadius: '8px',
+            width: '90%',
+            maxWidth: '500px'
+          }}>
+            <h3 style={{ marginBottom: '1.5rem' }}>Create Sell Offer for {selectedAsset.name}</h3>
+            
+            <form onSubmit={handleCreateOffer}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+                  Amount (XRP):
+                </label>
+                <input
+                  type="number"
+                  value={sellAmount}
+                  onChange={(e) => setSellAmount(e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+                  Seed Phrase:
+                </label>
+                <input
+                  type="password"
+                  value={seed}
+                  onChange={(e) => setSeed(e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button
+                  type="submit"
+                  disabled={isCreatingOffer}
+                  style={{
+                    flex: 1,
+                    padding: '0.75rem',
+                    backgroundColor: '#000',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    opacity: isCreatingOffer ? 0.7 : 1
+                  }}
+                >
+                  {isCreatingOffer ? 'Creating...' : 'Create Offer'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedAsset(null)
+                    setSellAmount('')
+                    setSeed('')
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '0.75rem',
+                    backgroundColor: '#fff',
+                    color: '#000',
+                    border: '1px solid #000',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
