@@ -1,0 +1,128 @@
+openapi: 3.0.0
+info:
+  title: XRP Wallet API
+  version: 1.0.0
+  description: API for managing XRP wallets and authentication.
+
+paths:
+
+  /api/auth/create-wallet:
+    post:
+      summary: Create a new XRP wallet
+      tags: 
+        - AuthWallets
+      description: Generates a new XRP wallet, including address, public key and seed, for the user.
+      requestBody:
+        required: false
+      responses:
+        '200':
+          description: Successfully created a new wallet.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  wallet:
+                    type: object
+                    properties:
+                      address:
+                        type: string
+                      publicKey:
+                        type: string
+              example:
+                success: true
+                wallet:
+                  address: "rT3hR7u4EjkTyUv5g1txfM8VEXAMPLe99v"
+                  publicKey: "EDuKd5MRNxSpxXm8qkjF7sXkzVJXvhB8W5"
+
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  error:
+                    type: string
+              example:
+                success: false
+                error: "Server error during wallet creation."
+
+  /api/auth/login:
+    post:
+      summary: Login with an XRP wallet using a seed
+      tags: 
+        - AuthWallets
+      description: Authenticates a user by validating their XRP wallet seed and returns a JWT token for session management.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - seed
+              properties:
+                seed:
+                  type: string
+                  description: The seed of the XRP wallet used for authentication.
+            example:
+              seed: "s████████████████████████████"
+      responses:
+        '200':
+          description: Successfully logged in and generated a JWT token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  wallet:
+                    type: object
+                    properties:
+                      address:
+                        type: string
+                      publicKey:
+                        type: string
+                  token:
+                    type: string
+              example:
+                success: true
+                wallet:
+                  address: "rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv"
+                  publicKey: "ED████████████████████████████████"
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '400':
+          description: Missing seed in the request body.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  error:
+                    type: string
+              example:
+                success: false
+                error: "Seed is missing!!!!!!!"
+        '401':
+          description: Invalid seed provided.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  error:
+                    type: string
+              example:
+                success: false
+                error: "Invalid seed"
+
