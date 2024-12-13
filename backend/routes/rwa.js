@@ -4,19 +4,19 @@ const xrpl = require('xrpl')
 const client = require('../config/xrplConnect');
 const authenticateToken = require('../middlewares/auth');
 
-router.post('/create', authenticateToken , async (req, res) => {
+router.post('/create', authenticateToken, async (req, res) => {
     try {
         const { name, description, valuation, location, size, seed } = req.body;
         const walletADdress = req.user.walletAddress;
 
-        if ( !name || !description || !valuation || !location || !size || !seed) {
+        if (!name || !description || !valuation || !location || !size || !seed) {
             console.error("Missing fields!")
             res.status(400).json({
                 error: "Missing fields"
             })
             return
         }
-        
+
         const metadata = {
             name,
             description,
@@ -43,6 +43,79 @@ router.post('/create', authenticateToken , async (req, res) => {
             res.json({
                 tokenId: signedTx.result.TokenID,
                 metadata
+            });
+        } else {
+            res.status(500).json({
+                error: response.result.meta.TransactionResult
+            })
+        }
+    } catch (error) {
+        console.error('RWA creation error : ', error)
+        res.status(500).json({
+            error: 'Creation failed'
+        })
+    }
+})
+
+router.post('/modify', authenticateToken, async (req, res) => {
+    try {
+        const { name, description, valuation, location, size, seed, tokenID } = req.body;
+        const walletADdress = req.user.walletAddress;
+
+        if (!seed || !tokenID) {
+            console.error("Missing fields!")
+            res.status(400).json({
+                error: "Missing fields"
+            })
+            return
+        }
+
+        const rwas = await client.request({
+            command: 'account_nfts',
+            account: req.user.walletAddress
+        });
+
+        const token = rwas.result.account_nfts.find(nft => nft.NFTokenID === tokenID);
+
+        if (!token) {
+            res.status(404).json({
+                error: "Token doesn't exist"
+            });
+            return
+        }
+
+        const tokenData = JSON.parse(xrpl.convertHexToString(token.URI));
+
+        const newProperties = {
+            location: location ? location : tokenData.location,
+            size: size ? size : tokenData.size
+        }
+
+
+        const newMetadata = {
+            name: name ? name : tokenData.name,
+            description: description ? description : tokenData.description,
+            valuation: valuation ? valuation : tokenData.valuation,
+            properties: newProperties,
+            createdAt: new Date().toISOString()
+        }
+
+        const newTokenTx = {
+            TransactionType: "NFTokenMint",
+            Account: walletADdress,
+            NFTokenTaxon: 0,
+            Flags: 8,
+            URI: xrpl.convertStringToHex(JSON.stringify(newMetadata)),
+            NFTokenID: tokenID
+        }
+
+        const wallet = xrpl.Wallet.fromSeed(seed);
+        const signedTx = await client.submitAndWait(newTokenTx, { wallet });
+
+        if (signedTx.result.meta.TransactionResult === 'tesSUCCESS') {
+            res.json({
+                tokenId: signedTx.result.TokenID,
+                newMetadata
             });
         } else {
             res.status(500).json({
@@ -106,14 +179,14 @@ router.post('/create-sell-offer', authenticateToken, async (req, res) => {
         const { tokenID, amount, seed } = req.body;
         const walletAddress = req.user.walletAddress;
 
-        if ( !tokenID || !amount || !seed || !walletAddress) {
+        if (!tokenID || !amount || !seed || !walletAddress) {
             console.error("Missing fields!")
             res.status(400).json({
                 error: "Missing fields"
             })
             return
         }
-        
+
         const sellOfferTx = {
             TransactionType: "NFTokenCreateOffer",
             Account: walletAddress,
@@ -141,7 +214,7 @@ router.post('/list-sell-offers', authenticateToken, async (req, res) => {
     try {
         const { tokenID } = req.body;
 
-        if ( !tokenID) {
+        if (!tokenID) {
             console.error("Missing fields!")
             res.status(400).json({
                 error: "Missing fields"
@@ -167,13 +240,13 @@ router.post('/list-sell-offers', authenticateToken, async (req, res) => {
     }
 })
 
-router.post('/accept-sell-offer', authenticateToken , async (req, res) => {
+router.post('/accept-sell-offer', authenticateToken, async (req, res) => {
     try {
 
         const { nft_offer_index, seed } = req.body;
         const walletAddress = req.user.walletAddress;
 
-        if ( !nft_offer_index || !seed) {
+        if (!nft_offer_index || !seed) {
             console.error("Missing fields!")
             res.status(400).json({
                 error: "Missing fields"
@@ -181,7 +254,7 @@ router.post('/accept-sell-offer', authenticateToken , async (req, res) => {
             return
         }
 
-        
+
         const acceptSellOfferTx = {
             TransactionType: "NFTokenAcceptOffer",
             Account: walletAddress,
@@ -216,7 +289,7 @@ router.post('/cancel-sell-offer', authenticateToken, async (req, res) => {
 
         const { tokenOfferId, seed } = req.body;
 
-        if ( !tokenOfferId) {
+        if (!tokenOfferId) {
             console.error("Missing fields!")
             res.status(400).json({
                 error: "Missing fields"
@@ -224,7 +297,7 @@ router.post('/cancel-sell-offer', authenticateToken, async (req, res) => {
             return
         }
         const wallet = xrpl.Wallet.fromSeed(seed);
-        
+
         const cancelOfferTx = {
             TransactionType: "NFTokenCancelOffer",
             Account: wallet.classicAddress,
