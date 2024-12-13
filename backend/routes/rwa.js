@@ -123,9 +123,9 @@ router.post('/modify', authenticateToken, async (req, res) => {
             })
         }
     } catch (error) {
-        console.error('RWA creation error : ', error)
+        console.error('RWA Modification error : ', error)
         res.status(500).json({
-            error: 'Creation failed'
+            error: 'Modification failed'
         })
     }
 })
