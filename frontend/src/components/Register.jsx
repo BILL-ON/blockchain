@@ -1,6 +1,7 @@
 // src/pages/Register.jsx
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ip } from '../ip'
 
 const Register = () => {
   const navigate = useNavigate()
@@ -13,7 +14,7 @@ const Register = () => {
     setError('')
     
     try {
-      const response = await fetch('http://localhost:3000/api/auth/create-wallet', {
+      const response = await fetch(`${ip}/api/auth/create-wallet`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

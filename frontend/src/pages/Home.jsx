@@ -1,6 +1,8 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function Home() {
+  const navigate = useNavigate()
   return (
 <div style={{
       padding: '2rem',
@@ -27,7 +29,7 @@ export default function Home() {
         gap: '1rem',
         justifyContent: 'center'
       }}>
-        <button style={{
+        <button onClick={() => {navigate('/Faq')}} style={{
           padding: '0.5rem 1rem',
           backgroundColor: '#000',
           color: '#fff',
@@ -37,7 +39,7 @@ export default function Home() {
         }}>
           Explore
         </button>
-        <button style={{
+        <button onClick={() => {navigate('/register')}}  style={{
           padding: '0.5rem 1rem',
           backgroundColor: '#fff',
           color: '#000',

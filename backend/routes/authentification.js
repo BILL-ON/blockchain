@@ -62,7 +62,7 @@ router.post('/login', async (req, res) => {
         });
     } catch(error) {
         console.error('Login error : ', error);
-        res.status('401').json({
+        res.status(401).json({
             success: false,
             error: 'Invalid seed'
         })

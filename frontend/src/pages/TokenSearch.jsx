@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ip } from '../ip'
 
 const TokenSearch = () => {
   const [tokenId, setTokenId] = useState('')
@@ -11,7 +12,7 @@ const TokenSearch = () => {
     e.preventDefault()
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:3000/api/rwa/list-sell-offers', {
+      const response = await fetch(`${ip}/api/rwa/list-sell-offers`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -31,7 +32,7 @@ const TokenSearch = () => {
   const handleBuy = async (e) => {
     e.preventDefault()
     try {
-      const response = await fetch('http://localhost:3000/api/rwa/accept-sell-offer', {
+      const response = await fetch(`${ip}/api/rwa/accept-sell-offer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

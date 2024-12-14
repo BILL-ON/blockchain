@@ -1,10 +1,14 @@
-// src/pages/MyNFTsAndOffers.jsx
 import { useState, useEffect } from 'react'
+import { ip } from '../ip'
 
 const MyNFTsAndOffers = () => {
   const [nfts, setNfts] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedOfferId, setSelectedOfferId] = useState(null)
+  const [seedPhrase, setSeedPhrase] = useState('')
+  const [isCancellingOffer, setIsCancellingOffer] = useState(false)
 
   useEffect(() => {
     fetchNFTs()
@@ -12,8 +16,7 @@ const MyNFTsAndOffers = () => {
 
   const fetchNFTs = async () => {
     try {
-      // Fetch NFTs
-      const nftResponse = await fetch('http://localhost:3000/api/rwa/my-assets', {
+      const nftResponse = await fetch(`${ip}/api/rwa/my-assets`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -24,11 +27,10 @@ const MyNFTsAndOffers = () => {
         throw new Error(nftData.error || 'Failed to fetch NFTs')
       }
 
-      // For each NFT, fetch its sell offers
       const nftsWithOffers = await Promise.all(
         nftData.assets.map(async (nft) => {
           try {
-            const offerResponse = await fetch('http://localhost:3000/api/rwa/list-sell-offers', {
+            const offerResponse = await fetch(`${ip}/api/rwa/list-sell-offers`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -59,29 +61,34 @@ const MyNFTsAndOffers = () => {
     }
   }
 
-  const handleCancelOffer = async (tokenOfferId, seed) => {
+  const handleCancelOffer = async () => {
+    setIsCancellingOffer(true);
     try {
-      const response = await fetch('http://localhost:3000/api/rwa/cancel-sell-offer', {
+      const response = await fetch(`${ip}/api/rwa/cancel-sell-offer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({
-          tokenOfferId,
-          seed
+          tokenOfferId: selectedOfferId,
+          seed: seedPhrase
         })
       })
 
       if (response.ok) {
-        // Refresh the NFTs and offers
         fetchNFTs()
+        setIsModalOpen(false)
+        setSeedPhrase('')
+        setSelectedOfferId(null)
       } else {
         const data = await response.json()
         throw new Error(data.error)
       }
     } catch (error) {
       alert('Failed to cancel offer: ' + error.message)
+    } finally {
+      setIsCancellingOffer(false);
     }
   }
 
@@ -170,10 +177,8 @@ const MyNFTsAndOffers = () => {
                       </div>
                       <button
                         onClick={() => {
-                          const seed = prompt('Enter your seed phrase to cancel this offer:')
-                          if (seed) {
-                            handleCancelOffer(offer.nft_offer_index, seed)
-                          }
+                          setSelectedOfferId(offer.nft_offer_index)
+                          setIsModalOpen(true)
                         }}
                         style={{
                           padding: '0.5rem 1rem',
@@ -197,6 +202,81 @@ const MyNFTsAndOffers = () => {
           </div>
         ))}
       </div>
+
+      {isModalOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '2rem',
+            borderRadius: '8px',
+            width: '90%',
+            maxWidth: '400px'
+          }}>
+            <h3 style={{ marginBottom: '1rem' }}>Cancel Offer</h3>
+            <input
+              type="password"
+              placeholder="Enter your seed phrase"
+              value={seedPhrase}
+              onChange={(e) => setSeedPhrase(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                marginBottom: '1rem',
+                border: '1px solid #ddd',
+                borderRadius: '4px'
+              }}
+            />
+            <div style={{
+              display: 'flex',
+              gap: '1rem',
+              justifyContent: 'flex-end'
+            }}>
+              <button
+                onClick={() => {
+                  setIsModalOpen(false)
+                  setSeedPhrase('')
+                  setSelectedOfferId(null)
+                }}
+                style={{
+                  padding: '0.5rem 1rem',
+                  backgroundColor: '#fff',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCancelOffer}
+                disabled={!seedPhrase || isCancellingOffer}
+                style={{
+                  padding: '0.5rem 1rem',
+                  backgroundColor: seedPhrase ? '#ff4444' : '#ffaaaa',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: seedPhrase ? 'pointer' : 'not-allowed',
+                  opacity: isCancellingOffer ? 0.7 : 1
+                }}
+              >
+                {isCancellingOffer ? 'Cancelling...' : 'Confirm cancel'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

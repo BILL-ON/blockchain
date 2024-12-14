@@ -1,6 +1,7 @@
 // src/pages/CreateRWA.jsx
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ip } from '../ip'
 
 const CreateRWA = () => {
   const navigate = useNavigate()
@@ -28,7 +29,7 @@ const CreateRWA = () => {
     setError('')
 
     try {
-      const response = await fetch('http://localhost:3000/api/rwa/create', {
+      const response = await fetch(`${ip}/api/rwa/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -40,7 +41,7 @@ const CreateRWA = () => {
       const data = await response.json()
 
       if (response.ok) {
-        navigate('/marketplace') // or wherever you want to redirect after creation
+        navigate('/myassets') // or wherever you want to redirect after creation
       } else {
         setError(data.error || 'Creation failed')
       }
