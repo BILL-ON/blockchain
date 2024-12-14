@@ -10,26 +10,36 @@ import Login from './components/Login';
 import Register from './components/Register';
 import TokenSearch from './pages/TokenSearch';
 import Faq from './pages/Faq'
+import Footer from './components/Footer';
 
 function App() {
   return (
     <Router>
-      <div>
+      <div style={{ 
+        minHeight: '100vh',
+        minWidth: '100vh',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
         <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/my-sell-offers" element={<MySellOffers />} />
-          <Route path="/myassets" element={<Myassets />} />
-          <Route path="/nft/:id" element={<NFTDetails />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/createRWA" element={<CreateRWA />} />
-          <Route path="/TokenSearch" element={<TokenSearch />} />
-          <Route path="/Faq" element={<Faq />} />
-        </Routes>
+        <div>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/my-sell-offers" element={<MySellOffers />} />
+            <Route path="/myassets" element={<Myassets />} />
+            <Route path="/nft/:id" element={<NFTDetails />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/createRWA" element={<CreateRWA />} />
+            <Route path="/TokenSearch" element={<TokenSearch />} />
+            <Route path="/Faq" element={<Faq />} />
+          </Routes>
+        </div>
+        <Footer />
       </div>
     </Router>
   );
+
 }
 
 export default App;
