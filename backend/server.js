@@ -8,7 +8,6 @@ const swaggerDoc = YAML.load('./swagger.yaml')
 
 const authRoutes = require('./routes/authentification');
 const rwaRoutes = require('./routes/rwa');
-const testRoutes = require('./routes/test');
 
 const connectDatabase = require('./config/mgdb');
 const app = express();
@@ -19,7 +18,6 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/rwa', rwaRoutes);
 app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerDoc))
-app.use('/test', testRoutes);
 
 // Start server
 const PORT = process.env.PORT || 8000;
