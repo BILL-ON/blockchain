@@ -13,6 +13,6 @@ COPY routes/ /app/routes/
 COPY middlewares/ /app/middlewares/
 COPY .env /app
 
-EXPOSE 8000
+EXPOSE 3000
 
 CMD ["npm", "run", "start"]
