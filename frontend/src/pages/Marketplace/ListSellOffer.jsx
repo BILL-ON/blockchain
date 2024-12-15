@@ -1,16 +1,19 @@
-import { useState } from 'react'
-import { ip } from '../ip'
+import { useState, useEffect } from 'react';
+import { ip } from '../../ip'
 
-const TokenSearch = () => {
-  const [tokenId, setTokenId] = useState('')
+export default function ListSellOffer({ tokenId }) {
   const [offers, setOffers] = useState([])
-  const [loading, setLoading] = useState(false)
   const [selectedOffer, setSelectedOffer] = useState(null)
-  const [seed, setSeed] = useState('')
+  const [seed, setSeed] = useState('')  
 
-  const handleSearch = async (e) => {
-    e.preventDefault()
-    setLoading(true)
+  useEffect(() => {
+    fetchRWAs();
+  }, []);
+
+
+  const fetchRWAs = async (e) => {
+    // setLoading(true)
+    console.log(tokenId)
     try {
       const response = await fetch(`${ip}/api/rwa/list-sell-offers`, {
         method: 'POST',
@@ -25,9 +28,10 @@ const TokenSearch = () => {
     } catch (error) {
       alert('Failed to fetch offers')
     } finally {
-      setLoading(false)
+      // setLoading(false)
     }
   }
+
 
   const handleBuy = async (e) => {
     e.preventDefault()
@@ -47,7 +51,6 @@ const TokenSearch = () => {
       if (response.ok) {
         setSelectedOffer(null)
         setSeed('')
-        handleSearch(e)
       } else {
         throw new Error('Failed to accept offer')
       }
@@ -57,39 +60,7 @@ const TokenSearch = () => {
   }
 
   return (
-    <div style={{ maxWidth: '800px', margin: '2rem auto', padding: '0 1rem' }}>
-      <form onSubmit={handleSearch} style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <input
-            type="text"
-            value={tokenId}
-            onChange={(e) => setTokenId(e.target.value)}
-            placeholder="Enter Token ID"
-            required
-            style={{
-              flex: 1,
-              padding: '0.75rem',
-              border: '1px solid #ddd',
-              borderRadius: '4px'
-            }}
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              padding: '0.75rem 1.5rem',
-              backgroundColor: '#000',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            {loading ? 'Searching...' : 'Search'}
-          </button>
-        </div>
-      </form>
-
+    <div>
       {offers.length > 0 && (
         <div style={{ display: 'grid', gap: '1rem' }}>
           {offers.map(offer => (
@@ -125,8 +96,7 @@ const TokenSearch = () => {
           ))}
         </div>
       )}
-
-      {selectedOffer && (
+{selectedOffer && (
         <div style={{
           position: 'fixed',
           top: 0,
@@ -206,5 +176,3 @@ const TokenSearch = () => {
     </div>
   )
 }
-
-export default TokenSearch

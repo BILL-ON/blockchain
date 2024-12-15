@@ -8,7 +8,7 @@ import NFTDetails from './pages/NFTDetails';
 import CreateRWA from './pages/CreateRWA';
 import Login from './components/Login';
 import Register from './components/Register';
-import TokenSearch from './pages/TokenSearch';
+import Dashboard from './pages/Marketplace/Dashboard';
 import Faq from './pages/Faq'
 import Footer from './components/Footer';
 
@@ -31,7 +31,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/createRWA" element={<CreateRWA />} />
-            <Route path="/TokenSearch" element={<TokenSearch />} />
+            <Route path="/Dashboard" element={<Dashboard />} />
             <Route path="/Faq" element={<Faq />} />
           </Routes>
         </div>

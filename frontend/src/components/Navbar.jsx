@@ -31,7 +31,7 @@ function Navbar() {
         <Link to="/my-sell-offers" style={{ textDecoration: 'none', color: 'black' }}>
           My sell-offers
         </Link>
-        <Link to="/TokenSearch" style={{ textDecoration: 'none', color: 'black' }}>
+        <Link to="/Dashboard" style={{ textDecoration: 'none', color: 'black' }}>
           Search token
         </Link>
         <Link to="/Faq" style={{ textDecoration: 'none', color: 'black' }}>

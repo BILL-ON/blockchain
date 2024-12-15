@@ -335,6 +335,15 @@ router.post('/accept-sell-offer', authenticateToken, async (req, res) => {
         const signedTx = await client.submitAndWait(acceptSellOfferTx, { wallet });
 
         if (signedTx.result.meta.TransactionResult === 'tesSUCCESS') {
+            try {
+              await RWA.findOneAndUpdate(
+                { tokenId: signedTx.result.meta.nftoken_id }, // Find by tokenId
+                { walletAddress: walletAddress }, // Update owner to buyer's address
+                { new: true }
+              );
+            } catch (dbError) {
+              console.log('Database update failed:', dbError);
+            }
             res.json({
                 res: signedTx.result.meta.TransactionResult
             })
