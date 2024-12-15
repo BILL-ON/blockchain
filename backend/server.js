@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+require('./config/mgdb')
 
 const swaggerUI = require('swagger-ui-express')
 const YAML = require('yamljs')

@@ -3,11 +3,12 @@ const router = express.Router();
 const xrpl = require('xrpl')
 const client = require('../config/xrplConnect');
 const authenticateToken = require('../middlewares/auth');
+const RWA = require('../models/RWA');
 
 router.post('/create', authenticateToken, async (req, res) => {
     try {
         const { name, description, valuation, location, size, seed } = req.body;
-        const walletADdress = req.user.walletAddress;
+        const walletAddress = req.user.walletAddress;
 
         if (!name || !description || !valuation || !location || !size || !seed) {
             console.error("Missing fields!")
@@ -30,7 +31,7 @@ router.post('/create', authenticateToken, async (req, res) => {
 
         const tokenTx = {
             TransactionType: "NFTokenMint",
-            Account: walletADdress,
+            Account: walletAddress,
             NFTokenTaxon: 0,
             Flags: 8,
             URI: xrpl.convertStringToHex(JSON.stringify(metadata))
@@ -40,8 +41,22 @@ router.post('/create', authenticateToken, async (req, res) => {
         const signedTx = await client.submitAndWait(tokenTx, { wallet });
 
         if (signedTx.result.meta.TransactionResult === 'tesSUCCESS') {
+            const newRWA = new RWA({
+                name,
+                description,
+                valuation,
+                properties: {
+                    location,
+                    size
+                },
+                tokenId: signedTx.result.meta.nftoken_id,
+                walletAddress
+            })
+
+            await newRWA.save();
+
             res.json({
-                tokenId: signedTx.result.TokenID,
+                tokenId: signedTx.result.meta.nftoken_id,
                 metadata
             });
         } else {
@@ -56,6 +71,19 @@ router.post('/create', authenticateToken, async (req, res) => {
         })
     }
 })
+
+// ALL EXCEPT HIS OWN
+router.get('/all', authenticateToken, async (req, res) => {
+  try {
+    const walletAddress = req.user.walletAddress;
+    // Using $ne (not equal) to exclude the user's own RWAs
+    const rwaList = await RWA.find({ walletAddress: { $ne: walletAddress } });
+    res.json(rwaList);
+  } catch (error) {
+    console.error('Error fetching RWAs:', error);
+    res.status(500).json({ error: 'Failed to fetch RWAs' });
+  }
+});
 
 router.post('/modify', authenticateToken, async (req, res) => {
     try {
