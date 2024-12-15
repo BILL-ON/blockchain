@@ -32,7 +32,7 @@ function Navbar() {
           My sell-offers
         </Link>
         <Link to="/Dashboard" style={{ textDecoration: 'none', color: 'black' }}>
-          Search token
+          MarketPlace
         </Link>
         <Link to="/Faq" style={{ textDecoration: 'none', color: 'black' }}>
           FAQ
