@@ -74,15 +74,15 @@ router.post('/create', authenticateToken, async (req, res) => {
 
 // ALL EXCEPT HIS OWN
 router.get('/all', authenticateToken, async (req, res) => {
-  try {
-    const walletAddress = req.user.walletAddress;
-    // Using $ne (not equal) to exclude the user's own RWAs
-    const rwaList = await RWA.find({ walletAddress: { $ne: walletAddress } });
-    res.json(rwaList);
-  } catch (error) {
-    console.error('Error fetching RWAs:', error);
-    res.status(500).json({ error: 'Failed to fetch RWAs' });
-  }
+    try {
+        const walletAddress = req.user.walletAddress;
+        // Using $ne (not equal) to exclude the user's own RWAs
+        const rwaList = await RWA.find({ walletAddress: { $ne: walletAddress } });
+        res.json(rwaList);
+    } catch (error) {
+        console.error('Error fetching RWAs:', error);
+        res.status(500).json({ error: 'Failed to fetch RWAs' });
+    }
 });
 
 router.post('/modify', authenticateToken, async (req, res) => {
@@ -158,16 +158,15 @@ router.post('/modify', authenticateToken, async (req, res) => {
     }
 })
 
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/delete-rwa', authenticateToken, async (req, res) => {
     try {
-        const tokenId = req.params.id;
-        const { seed } = req.body;
+        const { tokenId, seed } = req.body;
         const walletAddress = req.user.walletAddress;
 
-        if (!seed) {
-            console.error("Missing seed!")
+        if (!tokenId || !seed || !walletAddress) {
+            console.error("Missing fields!")
             res.status(400).json({
-                error: "Missing seed"
+                error: "Missing fields"
             })
             return
         }
@@ -179,26 +178,32 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         };
 
         const wallet = xrpl.Wallet.fromSeed(seed);
-        await client.connect();
         const signedTx = await client.submitAndWait(tokenTx, { wallet });
-        await client.disconnect();
 
         if (signedTx.result.meta.TransactionResult === 'tesSUCCESS') {
-            return {
-                tokenId
-            };
+            try {
+                await RWA.deleteOne({ tokenId: tokenId });
+            } catch (dbError) {
+                console.log('Database deletion failed:', dbError);
+            }
+
+            res.json({
+                tokenId: tokenId,
+                transaction: signedTx.result.meta.TransactionResult
+            })
         } else {
-            throw new Error(signedTx.result.meta.TransactionResult);
+            res.status(500).json({
+                error: signedTx.result.meta.TransactionResult
+            })
         }
-
-
     } catch (error) {
-        console.error('Error when deleting token ', error);
+        console.error("ERROR when deleting token: ", error);
         res.status(500).json({
-            error: 'Failed to fetch assets'
+            error: "Failed to delete token"
         })
     }
 })
+
 
 router.get('/my-assets', authenticateToken, async (req, res) => {
     try {
@@ -336,13 +341,13 @@ router.post('/accept-sell-offer', authenticateToken, async (req, res) => {
 
         if (signedTx.result.meta.TransactionResult === 'tesSUCCESS') {
             try {
-              await RWA.findOneAndUpdate(
-                { tokenId: signedTx.result.meta.nftoken_id }, // Find by tokenId
-                { walletAddress: walletAddress }, // Update owner to buyer's address
-                { new: true }
-              );
+                await RWA.findOneAndUpdate(
+                    { tokenId: signedTx.result.meta.nftoken_id }, // Find by tokenId
+                    { walletAddress: walletAddress }, // Update owner to buyer's address
+                    { new: true }
+                );
             } catch (dbError) {
-              console.log('Database update failed:', dbError);
+                console.log('Database update failed:', dbError);
             }
             res.json({
                 res: signedTx.result.meta.TransactionResult
