@@ -7,10 +7,11 @@ const RWACardList = () => {
   const [loading, setLoading] = useState(true);
   const [openPageDetails, setOpenPageDetails] = useState(false);
   const [selectedTokenId, setSelectedTokenId] = useState(null);
+  const [updateRWAs, setUpdateRWAs] = useState(0);
 
   useEffect(() => {
     fetchRWAs();
-  }, []);
+  }, [updateRWAs]);
 
   const fetchRWAs = async () => {
     try {
@@ -37,6 +38,11 @@ const RWACardList = () => {
     setOpenPageDetails(true)
   };
 
+  function handleClosePageDetails() {
+    setOpenPageDetails(false)
+    setUpdateRWAs(updateRWAs + 1)
+  }
+
   if (loading) {
     return (
       <div style={{
@@ -53,7 +59,7 @@ const RWACardList = () => {
     <>
       {
         openPageDetails ? 
-          <DetailRWA closePage={() => {setOpenPageDetails(false)}} tokenId={selectedTokenId} /> 
+          <DetailRWA closePage={() => {handleClosePageDetails()}} tokenId={selectedTokenId} /> 
         :
           <div style={{ maxWidth: '1200px', margin: '2rem auto', padding: '0 1rem' }}>
             <h2 style={{ marginBottom: '2rem', textAlign: 'center' }}>Available RWAs</h2>

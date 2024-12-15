@@ -23,7 +23,7 @@ export default function DetailRWA({ closePage, tokenId }) {
       <div style={{ width: "100%", display: "flex", justifyContent: "space-between", flexDirection: "row"}}>
         <div>
         <h2>Sell Offers</h2>
-        <ListSellOffer tokenId={tokenId} />
+        <ListSellOffer closePage={() => {closePage()}} tokenId={tokenId} />
         </div>
         <div>
         <h2>Buy Offers</h2>

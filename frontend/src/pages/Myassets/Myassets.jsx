@@ -15,10 +15,11 @@ const MyAssets = () => {
   const [isCreatingOffer, setIsCreatingOffer] = useState(false)
   const [openDeleteModal, setOpenDeleteModal] = useState(false)
   const [selectedDeleteAsset, setSelectedDeleteAsset] = useState('')
+  const [updateAssets, setUpdateAssets] = useState(0)
 
   useEffect(() => {
     fetchAssets()
-  }, [])
+  }, [updateAssets])
 
   const fetchAssets = async () => {
     try {
@@ -287,7 +288,7 @@ const MyAssets = () => {
           </div>
         </div>
       )}
-      { openDeleteModal && <DeleteModal close={() => {closeDeleteModal()}} rwa={selectedDeleteAsset} />}
+      { openDeleteModal && <DeleteModal close={() => {closeDeleteModal()}} rwa={selectedDeleteAsset} onSuccess={() => {setUpdateAssets(updateAssets + 1)}} />}
     </div>
   )
 }

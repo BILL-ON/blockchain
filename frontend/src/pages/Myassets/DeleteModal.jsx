@@ -27,7 +27,7 @@ const DeleteRWAModal = ({ rwa, close, onSuccess }) => {
       const data = await response.json();
 
       if (response.ok) {
-        // onSuccess?.(); // Optional callback for success
+        onSuccess(); // Optional callback for success
         close();
       } else {
         throw new Error(data.error || 'Failed to delete RWA');

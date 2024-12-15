@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
 import { ip } from '../../ip'
 
-export default function ListSellOffer({ tokenId }) {
+export default function ListSellOffer({ closePage, tokenId }) {
   const [offers, setOffers] = useState([])
   const [selectedOffer, setSelectedOffer] = useState(null)
   const [seed, setSeed] = useState('')  
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    fetchRWAs();
+    fetchRWAsListOffers();
   }, []);
 
 
-  const fetchRWAs = async (e) => {
-    // setLoading(true)
+  const fetchRWAsListOffers = async (e) => {
     console.log(tokenId)
     try {
       const response = await fetch(`${ip}/api/rwa/list-sell-offers`, {
@@ -27,14 +27,13 @@ export default function ListSellOffer({ tokenId }) {
       setOffers(data.RWAselloffers || [])
     } catch (error) {
       alert('Failed to fetch offers')
-    } finally {
-      // setLoading(false)
     }
   }
 
 
   const handleBuy = async (e) => {
     e.preventDefault()
+    setIsLoading(true)
     try {
       const response = await fetch(`${ip}/api/rwa/accept-sell-offer`, {
         method: 'POST',
@@ -51,11 +50,14 @@ export default function ListSellOffer({ tokenId }) {
       if (response.ok) {
         setSelectedOffer(null)
         setSeed('')
+        closePage()
       } else {
         throw new Error('Failed to accept offer')
       }
     } catch (error) {
       alert('Failed to buy: ' + error.message)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -145,10 +147,11 @@ export default function ListSellOffer({ tokenId }) {
                     color: '#fff',
                     border: 'none',
                     borderRadius: '4px',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    opacity: isLoading ? 0.7 : 1
                   }}
                 >
-                  Confirm Purchase
+                  {isLoading ? "Purchasing..." : "Confirm Purchase"}
                 </button>
                 <button
                   type="button"
