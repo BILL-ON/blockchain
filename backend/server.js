@@ -20,7 +20,7 @@ app.use('/api/rwa', rwaRoutes);
 app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerDoc))
 
 // Start server
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 3000;
 
 connectDatabase().then(() => {
   console.log("Connected to Database")

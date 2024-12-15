@@ -19,7 +19,7 @@ services:
     container_name: blockchain-backend
     restart: "no"
     ports:
-      - 8000:8000
+      - 3000:3000
     environment:
       - MONGO_URI=mongodb://mongo:27017/blockchain-database-mongo
 
