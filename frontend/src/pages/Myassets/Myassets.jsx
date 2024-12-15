@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ip } from '../../ip'
+import { FaTrash } from "react-icons/fa";
+import DeleteModal from './DeleteModal';
 
 const MyAssets = () => {
   const navigate = useNavigate()
@@ -11,6 +13,8 @@ const MyAssets = () => {
   const [sellAmount, setSellAmount] = useState('')
   const [seed, setSeed] = useState('')
   const [isCreatingOffer, setIsCreatingOffer] = useState(false)
+  const [openDeleteModal, setOpenDeleteModal] = useState(false)
+  const [selectedDeleteAsset, setSelectedDeleteAsset] = useState('')
 
   useEffect(() => {
     fetchAssets()
@@ -72,7 +76,15 @@ const MyAssets = () => {
     }
   }
 
-  // ... your existing loading and error states ...
+  function handleDeleteRWA(asset) {
+    setOpenDeleteModal(true);
+    setSelectedDeleteAsset(asset);
+  }
+
+  function closeDeleteModal() {
+    setOpenDeleteModal(false);
+    setSelectedDeleteAsset('');
+  }
 
   return (
     <div style={{
@@ -103,7 +115,12 @@ const MyAssets = () => {
               </div>
             ) : (
               <>
+              <div style={{display: "flex", justifyContent: "space-between"}}>
                 <h3 style={{ marginBottom: '1rem' }}>{asset.name}</h3>
+                <button onClick={() => {handleDeleteRWA(asset)}} style={{border: "none", backgroundColor: "white", cursor: "pointer"}}> 
+                  <FaTrash /> 
+                </button>
+              </div>
                 <p style={{
                   color: '#666',
                   marginBottom: '1rem',
@@ -270,6 +287,7 @@ const MyAssets = () => {
           </div>
         </div>
       )}
+      { openDeleteModal && <DeleteModal close={() => {closeDeleteModal()}} rwa={selectedDeleteAsset} />}
     </div>
   )
 }
