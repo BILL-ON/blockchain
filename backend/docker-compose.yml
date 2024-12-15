@@ -1,0 +1,28 @@
+# version: '3.9'
+services:
+  mongo:
+    image: mongo
+    hostname: mongo
+    container_name: blockchain-database-mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo:/data/db
+    env_file:
+      - database.env
+
+  back:
+    build: .
+    depends_on:
+      - mongo
+    hostname: blockchain-backend
+    container_name: blockchain-backend
+    restart: "no"
+    ports:
+      - 8000:8000
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/blockchain-database-mongo
+
+volumes:
+  mongo:
+    name: mongo-data
