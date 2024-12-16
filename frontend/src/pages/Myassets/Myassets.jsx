@@ -95,13 +95,14 @@ const MyAssets = () => {
     }}>
       <h2 style={{ marginBottom: '2rem' }}>My Assets</h2>
       
-      <div style={{
+      <div  style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
         gap: '2rem'
       }}>
         {assets.map(asset => (
           <div
+            data-testid="asset-card"
             key={asset.tokenId}
             style={{
               border: '1px solid #ddd',
@@ -118,7 +119,7 @@ const MyAssets = () => {
               <>
               <div style={{display: "flex", justifyContent: "space-between"}}>
                 <h3 style={{ marginBottom: '1rem' }}>{asset.name}</h3>
-                <button onClick={() => {handleDeleteRWA(asset)}} style={{border: "none", backgroundColor: "white", cursor: "pointer"}}> 
+                <button data-testid='button-trash' onClick={() => {handleDeleteRWA(asset)}} style={{border: "none", backgroundColor: "white", cursor: "pointer"}}> 
                   <FaTrash /> 
                 </button>
               </div>
