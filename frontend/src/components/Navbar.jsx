@@ -48,6 +48,9 @@ function Navbar() {
             <Link to="/login" style={{ textDecoration: 'none', color: 'black' }}>
               Login
             </Link>
+            <Link to="/Faq" style={{ textDecoration: 'none', color: 'black' }}>
+              FAQ
+            </Link>
           </>
         ) : (
           // Links for authenticated users
