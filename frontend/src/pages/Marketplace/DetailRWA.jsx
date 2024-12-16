@@ -1,5 +1,6 @@
 import React from 'react'
 import ListSellOffer from './ListSellOffer'
+import ListBuyOffer from './ListBuyOffer'
 
 export default function DetailRWA({ closePage, tokenId }) {
   return (
@@ -27,6 +28,7 @@ export default function DetailRWA({ closePage, tokenId }) {
         </div>
         <div>
         <h2>Buy Offers</h2>
+        <ListBuyOffer closePage={() => {closePage()}} tokenId={tokenId} />
         </div>
       </div>
     </div>
