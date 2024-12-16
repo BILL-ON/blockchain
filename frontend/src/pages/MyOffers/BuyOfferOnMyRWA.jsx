@@ -76,7 +76,7 @@ export default function BuyOfferOnMyRWA({ nft, onOfferAccepted }) {
                 }}
               >
                 <div style={{ marginBottom: '0.5rem' }}>
-                  <strong>Amount:</strong> {offer.amount} XRP
+                  <strong>Amount:</strong> {offer.amount} drops
                 </div>
                 <div style={{ marginBottom: '0.5rem' }}>
                   <strong>Offer ID:</strong> {offer.nft_offer_index}
@@ -128,7 +128,7 @@ export default function BuyOfferOnMyRWA({ nft, onOfferAccepted }) {
           }}>
             <h3 style={{ marginBottom: '1rem' }}>Accept Buy Offer</h3>
             <p style={{ marginBottom: '1rem' }}>
-              You are about to accept a buy offer for {selectedOffer?.amount} XRP from {selectedOffer?.owner}
+              You are about to accept a buy offer for {selectedOffer?.amount} drops from {selectedOffer?.owner}
             </p>
             <input
               type="password"

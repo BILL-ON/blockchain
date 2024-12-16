@@ -191,7 +191,7 @@ const MyNFTsAndOffers = () => {
                       }}
                     >
                       <div style={{ marginBottom: '0.5rem' }}>
-                        <strong>Amount:</strong> {offer.amount} XRP
+                        <strong>Amount:</strong> {offer.amount} drops
                       </div>
                       <div style={{ marginBottom: '0.5rem' }}>
                         <strong>Offer ID:</strong> {offer.nft_offer_index}

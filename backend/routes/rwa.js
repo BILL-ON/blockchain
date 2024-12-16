@@ -193,7 +193,7 @@ router.post('/create-sell-offer', authenticateToken, async (req, res) => {
             TransactionType: "NFTokenCreateOffer",
             Account: walletAddress,
             NFTokenID: tokenID,
-            Amount: amount,
+            Amount: xrpl.xrpToDrops(amount),
             Flags: 1
         };
 

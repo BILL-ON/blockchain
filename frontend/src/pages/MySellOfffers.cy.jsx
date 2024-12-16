@@ -91,13 +91,13 @@ describe('<MySellOffers />', () => {
   it('displays sell offers correctly', () => {
     cy.wait(['@fetchNFTsRequest', '@fetchSellOffersRequest', '@fetchBuyOffersRequest'])
     cy.contains('Active Sell Offers').should('be.visible')
-    cy.contains(`${mockNFTs[0].sellOffers[0].amount} XRP`).should('be.visible')
+    cy.contains(`${mockNFTs[0].sellOffers[0].amount} drops`).should('be.visible')
   })
 
   it('displays buy offers correctly', () => {
     cy.wait(['@fetchNFTsRequest', '@fetchSellOffersRequest', '@fetchBuyOffersRequest'])
     cy.contains('Active Buy Offers').should('be.visible')
-    cy.contains(`${mockNFTs[0].buyOffers[0].amount} XRP`).should('be.visible')
+    cy.contains(`${mockNFTs[0].buyOffers[0].amount} drops`).should('be.visible')
   })
 
   it('handles cancel sell offer flow', () => {
