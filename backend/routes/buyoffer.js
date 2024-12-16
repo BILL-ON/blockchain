@@ -140,13 +140,14 @@ router.post('/list-buy-offers', authenticateToken, async (req, res) => {
 
         res.json({
             success: true,
-            offers: nftBuyOffers.result,
+            offers: nftBuyOffers.result.offers,
         });
 
     } catch (error) {
-        console.error("Error fetching buy offers:", error);
-        res.status(500).json({
-            error: "Failed to fetch buy offers"
+        console.error("Empty:", error);
+        res.status(200).json({
+            success: false,
+            offers: {}
         });
     }
 });

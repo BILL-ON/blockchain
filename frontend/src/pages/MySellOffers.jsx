@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ip } from '../ip'
+import BuyOfferOnMyRWA from './MyOffers/BuyOfferOnMyRWA'
 
 const MyNFTsAndOffers = () => {
   const [nfts, setNfts] = useState([])
@@ -16,50 +17,70 @@ const MyNFTsAndOffers = () => {
 
   const fetchNFTs = async () => {
     try {
+      // Fetch base NFT data
       const nftResponse = await fetch(`${ip}/api/rwa/my-assets`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-      })
-      const nftData = await nftResponse.json()
-
+      });
+      const nftData = await nftResponse.json();
+      
       if (!nftResponse.ok) {
-        throw new Error(nftData.error || 'Failed to fetch NFTs')
+        throw new Error(nftData.error || 'Failed to fetch NFTs');
       }
-
-      const nftsWithOffers = await Promise.all(
+  
+      // Fetch both sell and buy offers for each NFT
+      const nftsWithAllOffers = await Promise.all(
         nftData.assets.map(async (nft) => {
           try {
-            const offerResponse = await fetch(`${ip}/api/rwa/list-sell-offers`, {
+            // Fetch sell offers
+            const sellOfferResponse = await fetch(`${ip}/api/rwa/list-sell-offers`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
               },
               body: JSON.stringify({ tokenID: nft.tokenId })
-            })
-            const offerData = await offerResponse.json()
-            
+            });
+            const sellOfferData = await sellOfferResponse.json();
+  
+            // Fetch buy offers
+            const buyOfferResponse = await fetch(`${ip}/api/rwa/list-buy-offers`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+              },
+              body: JSON.stringify({ tokenId: nft.tokenId })
+            });
+            const buyOfferData = await buyOfferResponse.json();
+            console.log(buyOfferData.offers)
+  
+            // Combine all data into a single NFT object
             return {
               ...nft,
-              sellOffers: offerData.RWAselloffers || []
-            }
+              sellOffers: sellOfferData.RWAselloffers || [],
+              buyOffers: buyOfferData.offers || []
+            };
           } catch (error) {
+            console.error(`Error fetching offers for NFT ${nft.tokenId}:`, error);
             return {
               ...nft,
-              sellOffers: []
-            }
+              sellOffers: [],
+              buyOffers: []
+            };
           }
         })
-      )
-
-      setNfts(nftsWithOffers)
+      );
+      setNfts(nftsWithAllOffers);
     } catch (err) {
-      setError('Failed to fetch data')
+      console.error('Failed to fetch NFTs:', err);
+      setError('Failed to fetch data');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
+  
 
   const handleCancelOffer = async () => {
     setIsCancellingOffer(true);
@@ -199,6 +220,8 @@ const MyNFTsAndOffers = () => {
                 <p style={{ color: '#666', fontSize: '0.9rem' }}>No active sell offers</p>
               )}
             </div>
+            <BuyOfferOnMyRWA nft={nft} />
+
           </div>
         ))}
       </div>
