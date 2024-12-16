@@ -1,7 +1,7 @@
 import React from 'react'
 import Login from './Login'
 import { ip } from '../ip'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 
 describe('<Login />', () => {
 
