@@ -22,6 +22,7 @@ services:
       - 3000:3000
     environment:
       - MONGO_URI=mongodb://mongo:27017/blockchain-database-mongo
+      - JWT_SECRET=dzadaztfydazuhidaztduazknd
   
   front:
     build:

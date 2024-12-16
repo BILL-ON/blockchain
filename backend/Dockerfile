@@ -11,7 +11,6 @@ COPY config/ /app/config/
 COPY models/ /app/models/
 COPY routes/ /app/routes/
 COPY middlewares/ /app/middlewares/
-COPY .env /app
 
 EXPOSE 3000
 

@@ -76,7 +76,7 @@ export default function ListSellOffer({ closePage, tokenId }) {
               }}
             >
               <div style={{ marginBottom: '1rem' }}>
-                <strong>Amount:</strong> {offer.amount} XRP
+                <strong>Amount:</strong> {offer.amount} drops
               </div>
               <div style={{ marginBottom: '1rem' }}>
                 <strong>Offer ID:</strong> {offer.nft_offer_index}
@@ -118,7 +118,7 @@ export default function ListSellOffer({ closePage, tokenId }) {
             width: '90%',
             maxWidth: '500px'
           }}>
-            <h3 style={{ marginBottom: '1.5rem' }}>Buy NFT for {selectedOffer.amount} XRP</h3>
+            <h3 style={{ marginBottom: '1.5rem' }}>Buy NFT for {selectedOffer.amount} drops</h3>
             <form onSubmit={handleBuy}>
               <div style={{ marginBottom: '1.5rem' }}>
                 <label style={{ display: 'block', marginBottom: '0.5rem' }}>

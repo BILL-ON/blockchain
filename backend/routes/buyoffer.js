@@ -91,7 +91,7 @@ router.post('/create-buy-offer', authenticateToken, async (req, res) => {
             "Account": wallet.classicAddress,
             "Owner": owner,
             "NFTokenID": tokenId,
-            "Amount": amount,
+            "Amount": xrpl.xrpToDrops(amount),
             "Flags": null  // null for buy offer
         }
 
