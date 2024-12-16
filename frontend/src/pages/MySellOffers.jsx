@@ -220,7 +220,7 @@ const MyNFTsAndOffers = () => {
                 <p style={{ color: '#666', fontSize: '0.9rem' }}>No active sell offers</p>
               )}
             </div>
-            <BuyOfferOnMyRWA nft={nft} />
+            <BuyOfferOnMyRWA nft={nft} onOfferAccepted={() => {fetchNFTs()}}/>
 
           </div>
         ))}
