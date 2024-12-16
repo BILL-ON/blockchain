@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ip } from '../../ip';
 
-export default function ListBuyOffer({ closePage, tokenId }) {
+export default function ListBuyOffer({ closePage, tokenId, updateBuyList }) {
   const [offers, setOffers] = useState([]);
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [seed, setSeed] = useState('');
@@ -11,7 +11,7 @@ export default function ListBuyOffer({ closePage, tokenId }) {
   useEffect(() => {
     fetchUserWallet();
     fetchRWAsListOffers();
-  }, []);
+  }, [updateBuyList]);
 
   const fetchUserWallet = async () => {
     try {
