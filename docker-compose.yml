@@ -33,8 +33,8 @@ services:
     ports:
       - 5173:5173
     environment:
-      - VITE_BACKEND_URL=http://localhost:3000
-
+      - VITE_BACKEND_URL=http://back:3000
+      
 volumes:
   mongo:
     name: mongo-data
