@@ -39,6 +39,7 @@ const Login = () => {
         localStorage.setItem('token', data.token)
         localStorage.setItem('walletAddress', data.wallet.address)
         localStorage.setItem('publicKey', data.wallet.publicKey)
+        window.dispatchEvent(new Event('auth-change'));
         navigate('/')
       } else {
         setError(data.error || 'Invalid seed')

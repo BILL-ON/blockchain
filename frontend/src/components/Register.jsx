@@ -39,6 +39,7 @@ const Register = () => {
   }
 
   const handleContinue = () => {
+    window.dispatchEvent(new Event('auth-change'));
     navigate('/')
   }
 
