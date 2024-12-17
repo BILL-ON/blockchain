@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const xrpl = require('xrpl')
-const client = require('../config/xrplConnect');
+const { client } = require('../config/xrplConnect'); // Use the updated client export
 
 router.post('/create-wallet', async (req, res) => {
     try {
