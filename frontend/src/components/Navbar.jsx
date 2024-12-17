@@ -37,7 +37,7 @@ function Navbar() {
       <Link to="/" style={{ textDecoration: 'none', color: 'black', fontWeight: 'bold' }}>
         NFT Marketplace
       </Link>
-      
+
       <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
         {!isAuthenticated ? (
           // Links for non-authenticated users
@@ -51,6 +51,10 @@ function Navbar() {
             <Link to="/Faq" style={{ textDecoration: 'none', color: 'black' }}>
               FAQ
             </Link>
+            <button onClick={() => {
+              const vuri = import.meta.env.VITE_IP_BACK;
+              console.log(`VITE IP : ${vuri}`);
+            }}>GIB URI</button>
           </>
         ) : (
           // Links for authenticated users
@@ -84,6 +88,11 @@ function Navbar() {
             >
               Logout
             </button>
+            <button onClick={() => {
+              const vuri = import.meta.env.VITE_IP_BACK;
+              console.log(`VITE IP : ${vuri}`);
+            }}>GIB URI</button>
+
           </>
         )}
       </div>
