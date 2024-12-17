@@ -1,8 +1,4 @@
-
 const jjest = require("@jest/globals");
-const request = require('supertest');
-
-const path = '/api/auth';
 
 jjest.describe("", () => {
     let result = 4;
@@ -17,6 +13,7 @@ jjest.describe("", () => {
     });
 
     jjest.test("", async () => {
+        
         jjest.expect(result).toEqual(6);
     });
 });

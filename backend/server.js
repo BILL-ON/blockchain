@@ -12,7 +12,7 @@ const rwaRoutes = require('./routes/rwa');
 const buyofferRoutes = require('./routes/buyoffer');
 
 const connectDatabase = require('./config/mgdb');
-const { connectXRPL } = require('./config/xrplConnect'); // Update to return a promise
+const { connectXRPL } = require('./config/xrplConnect');
 const app = express();
 
 app.use(cors());
@@ -23,17 +23,18 @@ app.use('/api/rwa', rwaRoutes);
 app.use('/api/rwa', buyofferRoutes);
 app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerDoc));
 
-// Start server
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
   try {
-    await connectDatabase();
-    await connectXRPL(); // Wait for XRPL connection
-    console.log("All connections established");
+    connectDatabase().then(() => {
+      connectXRPL().then(() => {
+        console.log("All connections established");
 
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+        app.listen(PORT, () => {
+          console.log(`Server running on port ${PORT}`);
+        });
+      })
     });
   } catch (error) {
     console.error("Failed to start server:", error);
@@ -44,4 +45,4 @@ if (require.main === module) {
   startServer();
 }
 
-module.exports = app; // Export for testing
+module.exports = app;
