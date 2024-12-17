@@ -27,13 +27,28 @@ app.get("/bozo", async (req, res) => {
       "message": "toegbokki"
     });
   } catch (error) {
-    console.error('Error when wallet created : ', error);
+    console.error('Error when bozo : ', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to create wallet !'
+      error: 'Failed to bozo !'
     })
   }
 })
+
+app.get("/", async (req, res) => {
+  try {
+    return res.status(200).json({
+      "message": "hello there"
+    });
+  } catch (error) {
+    console.error('Error when root : ', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to root !'
+    })
+  }
+})
+
 
 // Start server
 const PORT = process.env.PORT || 3000;
