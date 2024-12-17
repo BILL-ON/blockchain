@@ -52,8 +52,8 @@ function Navbar() {
               FAQ
             </Link>
             <button onClick={() => {
-              const vuri = import.meta.env.VITE_IP_BACK;
-              console.log(`VITE IP : ${vuri}`);
+              const vuri = import.meta.env;
+              console.log(`VITE IP : ${JSON.stringify(vuri)}`);
             }}>GIB URI</button>
           </>
         ) : (
