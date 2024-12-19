@@ -42,9 +42,6 @@ function Navbar() {
         {!isAuthenticated ? (
           // Links for non-authenticated users
           <>
-            <Link to="/register" style={{ textDecoration: 'none', color: 'black' }}>
-              Register
-            </Link>
             <Link to="/login" style={{ textDecoration: 'none', color: 'black' }}>
               Login
             </Link>
