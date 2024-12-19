@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { ip } from '../../ip'
 import { FaTrash } from "react-icons/fa";
 import DeleteModal from './DeleteModal';
+import { isInstalled, createNFTOffer } from '@gemwallet/api';
+import { stringToHex } from '../../utils/StringToHex';
 
 const MyAssets = () => {
   const navigate = useNavigate()
@@ -11,7 +13,6 @@ const MyAssets = () => {
   const [error, setError] = useState('')
   const [selectedAsset, setSelectedAsset] = useState(null)
   const [sellAmount, setSellAmount] = useState('')
-  const [seed, setSeed] = useState('')
   const [isCreatingOffer, setIsCreatingOffer] = useState(false)
   const [openDeleteModal, setOpenDeleteModal] = useState(false)
   const [selectedDeleteAsset, setSelectedDeleteAsset] = useState('')
@@ -44,33 +45,44 @@ const MyAssets = () => {
   }
   const handleCreateOffer = async (e) => {
     e.preventDefault()
-    setIsCreatingOffer(true)
-
     try {
-      const response = await fetch(`${ip}/api/rwa/create-sell-offer`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+
+      setIsCreatingOffer(true)
+
+      const walletResponse = await isInstalled()
+
+      if (!walletResponse.result.isInstalled) {
+        setError('GemWallet extension is not installed')
+        setIsCreatingOffer(false)
+        return
+      }
+
+      const createOfferPayload = {
+        NFTokenID: selectedAsset.tokenId,
+        amount: (sellAmount * 1000000).toString(),
+        fee: "20",
+        flags: {
+          tfSellNFToken: true // If enabled, indicates that the offer is a sell offer. Otherwise, it is a buy offer.
         },
-        body: JSON.stringify({
-          tokenID: selectedAsset.tokenId,
-          amount: sellAmount,
-          seed
-        })
-      })
+        memos: [
+          {
+            memo: {
+              memoType: stringToHex("Sell"),
+              memoData: stringToHex("RWA NFT Offer")
+            }
+          }
+        ]
+      }
+      // console.log(createOfferPayload)
 
-      const data = await response.json()
-
-      if (response.ok) {
-        setSelectedAsset(null)
-        setSellAmount('')
-        setSeed('')
-        alert('Sell offer created successfully!')
+      const createOfferResponse = await createNFTOffer(createOfferPayload)
+      if (createOfferResponse.type === 'response') {
+        setSelectedAsset(null);
       } else {
-        setError(data.error || 'Failed to create sell offer')
+        setError('You rejected the transaction!!!!')
       }
     } catch (err) {
+      console.log(err)
       setError('Failed to create sell offer')
     } finally {
       setIsCreatingOffer(false)
@@ -94,8 +106,8 @@ const MyAssets = () => {
       padding: '0 1rem'
     }}>
       <h2 style={{ marginBottom: '2rem' }}>My Assets</h2>
-      
-      <div  style={{
+
+      <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
         gap: '2rem'
@@ -117,12 +129,12 @@ const MyAssets = () => {
               </div>
             ) : (
               <>
-              <div style={{display: "flex", justifyContent: "space-between"}}>
-                <h3 style={{ marginBottom: '1rem' }}>{asset.name}</h3>
-                <button data-testid='button-trash' onClick={() => {handleDeleteRWA(asset)}} style={{border: "none", backgroundColor: "white", cursor: "pointer"}}> 
-                  <FaTrash /> 
-                </button>
-              </div>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <h3 style={{ marginBottom: '1rem' }}>{asset.name}</h3>
+                  <button data-testid='button-trash' onClick={() => { handleDeleteRWA(asset) }} style={{ border: "none", backgroundColor: "white", cursor: "pointer" }}>
+                    <FaTrash />
+                  </button>
+                </div>
                 <p style={{
                   color: '#666',
                   marginBottom: '1rem',
@@ -139,20 +151,16 @@ const MyAssets = () => {
                   fontSize: '0.9rem'
                 }}>
                   <div>
-                    <strong>Location:</strong><br/>
+                    <strong>Location:</strong><br />
                     {asset.properties.location}
                   </div>
                   <div>
-                    <strong>Size:</strong><br/>
+                    <strong>Size:</strong><br />
                     {asset.properties.size}
                   </div>
                   <div>
-                    <strong>Valuation:</strong><br/>
+                    <strong>Valuation:</strong><br />
                     {asset.valuation}
-                  </div>
-                  <div>
-                    <strong>Created:</strong><br/>
-                    {new Date(asset.createdAt).toLocaleDateString()}
                   </div>
                 </div>
                 <div style={{
@@ -165,7 +173,7 @@ const MyAssets = () => {
                 }}>
                   <strong>Token ID:</strong> {asset.tokenId}
                 </div>
-                
+
                 {/* New Create Sell Offer Button */}
                 <button
                   onClick={() => setSelectedAsset(asset)}
@@ -210,7 +218,16 @@ const MyAssets = () => {
             maxWidth: '500px'
           }}>
             <h3 style={{ marginBottom: '1.5rem' }}>Create Sell Offer for {selectedAsset.name}</h3>
-            
+            {error && (
+              <div style={{
+                color: 'red',
+                marginBottom: '1rem',
+                textAlign: 'center'
+              }}>
+                {error}
+              </div>
+            )}
+
             <form onSubmit={handleCreateOffer}>
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', marginBottom: '0.5rem' }}>
@@ -220,24 +237,6 @@ const MyAssets = () => {
                   type="number"
                   value={sellAmount}
                   onChange={(e) => setSellAmount(e.target.value)}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px'
-                  }}
-                />
-              </div>
-
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-                  Seed Phrase:
-                </label>
-                <input
-                  type="password"
-                  value={seed}
-                  onChange={(e) => setSeed(e.target.value)}
                   required
                   style={{
                     width: '100%',
@@ -270,7 +269,6 @@ const MyAssets = () => {
                   onClick={() => {
                     setSelectedAsset(null)
                     setSellAmount('')
-                    setSeed('')
                   }}
                   style={{
                     flex: 1,
@@ -289,7 +287,7 @@ const MyAssets = () => {
           </div>
         </div>
       )}
-      { openDeleteModal && <DeleteModal close={() => {closeDeleteModal()}} rwa={selectedDeleteAsset} onSuccess={() => {setUpdateAssets(updateAssets + 1)}} />}
+      {openDeleteModal && <DeleteModal close={() => { closeDeleteModal() }} rwa={selectedDeleteAsset} onSuccess={() => { setUpdateAssets(updateAssets + 1) }} />}
     </div>
   )
 }

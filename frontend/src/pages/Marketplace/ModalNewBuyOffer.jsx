@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ip } from '../../ip';
+import { isInstalled, createNFTOffer, getAddress } from '@gemwallet/api';
+import { stringToHex } from '../../utils/StringToHex';
 
 export default function ModalNewBuyOffer({ 
   onClose, 
@@ -9,7 +11,6 @@ export default function ModalNewBuyOffer({
 }) {
   const [formData, setFormData] = useState({
     amount: '',
-    seed: '',
     expiration: ''
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -20,33 +21,46 @@ export default function ModalNewBuyOffer({
     setError('');
     setIsLoading(true);
 
-    try {
-      const response = await fetch(`${ip}/api/rwa/create-buy-offer`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          tokenId,
-          amount: (formData.amount),
-          owner,
-          seed: formData.seed,
-          expiration: formData.expiration ? parseInt(formData.expiration) : undefined
-        })
-      });
+   try {
 
-      const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create buy offer');
+      const walletResponse = await isInstalled()
+
+      if (!walletResponse.result.isInstalled) {
+        setError('GemWallet extension is not installed')
+        setIsCreatingOffer(false)
+        return
       }
 
-      // Success handling
-      onOfferCreated && onOfferCreated();
-      handleClose();
+
+      const createOfferPayload = {
+        NFTokenID: tokenId,
+        amount: (formData.amount * 1000000).toString(),
+        fee: "20",
+        owner,
+        flags: {
+          tfSellNFToken: false // If enabled, indicates that the offer is a sell offer. Otherwise, it is a buy offer.
+        },
+        memos: [
+          {
+            memo: {
+              memoType: stringToHex("Buy"),
+              memoData: stringToHex("RWA NFT Offer")
+            }
+          }
+        ]
+      }
+
+      const createOfferResponse = await createNFTOffer(createOfferPayload)
+      if (createOfferResponse.type === 'response') {
+        onOfferCreated && onOfferCreated();
+        handleClose();
+      } else {
+        setError('You rejected the transaction!!!!')
+      }
     } catch (err) {
-      setError(err.message || 'Failed to create buy offer');
+      console.log(err)
+      setError('Failed to create buy offer')
     } finally {
       setIsLoading(false);
     }
@@ -63,7 +77,6 @@ export default function ModalNewBuyOffer({
   const handleClose = () => {
     setFormData({
       amount: '',
-      seed: '',
       expiration: ''
     });
     setError('');
@@ -112,44 +125,6 @@ export default function ModalNewBuyOffer({
               }}
             />
           </div>
-
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-              Seed Phrase:
-            </label>
-            <input
-              type="password"
-              name="seed"
-              value={formData.seed}
-              onChange={handleChange}
-              required
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid #ddd',
-                borderRadius: '4px'
-              }}
-            />
-          </div>
-
-          {/* <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-              Expiration (days, optional):
-            </label>
-            <input
-              type="number"
-              name="expiration"
-              value={formData.expiration}
-              onChange={handleChange}
-              min="1"
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid #ddd',
-                borderRadius: '4px'
-              }}
-            />
-          </div> */}
 
           {error && (
             <div style={{ 

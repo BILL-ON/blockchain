@@ -1,55 +1,64 @@
-// src/pages/Login.jsx
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ip } from '../ip'
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ip } from '../ip';
+import { isInstalled, getAddress } from "@gemwallet/api";
 
 const Login = () => {
-  const navigate = useNavigate()
-  const [seed, setSeed] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [hasGemWallet, setHasGemWallet] = useState(true);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    
-    // Check if seed is empty
-    if (!seed) {
-      setError('Seed is missing!!!!!!!')
-      return
-    }
-
-    setIsLoading(true)
-    setError('')
-
-    console.log(ip)
-
+  async function sendAddress(address) {
     try {
-      const response = await fetch(`${ip}/api/auth/login`, {
+      const response = await fetch(`${ip}/api/auth/connect-wallet`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ seed })
+        body: JSON.stringify({ address })
       })
 
       const data = await response.json()
+      console.log(data)
 
-      if (response.ok) {
+      if (data.wallet.address.type === 'response') {
         // Store token and wallet address
         localStorage.setItem('token', data.token)
         localStorage.setItem('walletAddress', data.wallet.address)
-        localStorage.setItem('publicKey', data.wallet.publicKey)
         window.dispatchEvent(new Event('auth-change'));
         navigate('/')
       } else {
-        setError(data.error || 'Invalid seed')
+        setError(data.error || 'Got an error with the back')
       }
     } catch (err) {
-      setError('Invalid seed')
+      setError('Got an error with the back')
     } finally {
       setIsLoading(false)
-    }
+    };
   }
+
+  const handleConnect = async (e) => {
+    e.preventDefault();
+    try {
+      isInstalled().then(response => {
+        if (response.result.isInstalled) {
+          getAddress().then((response) => {
+            if (response?.type !== "reject") {
+              sendAddress(response);
+            } else {
+              setError('You refused the connection with GemWallets')
+            }
+          })
+        } else {
+          setError('You don\'t have the extension of GemWallets !!!')
+        }
+      })
+      
+    } catch(error) {
+      setError('An error occured on our end')
+    }
+  };
 
   return (
     <div style={{
@@ -59,8 +68,7 @@ const Login = () => {
       boxShadow: '0 0 10px rgba(0,0,0,0.1)',
       borderRadius: '8px'
     }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Login with Seed Phrase</h2>
-
+      <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Connect with GemWallet</h2>
       {error && (
         <div style={{
           color: 'red',
@@ -70,28 +78,30 @@ const Login = () => {
           {error}
         </div>
       )}
-
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-            Seed Phrase:
-          </label>
-          <input
-            type="password"
-            value={seed}
-            onChange={(e) => setSeed(e.target.value)}
+      
+      {!hasGemWallet ? (
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ marginBottom: '1rem' }}>
+            Please install the GemWallet Chrome extension to continue.
+          </p>
+          <a 
+            href="https://chrome.google.com/webstore/detail/GemWallet/nljnapkakcehgpoheplcfgknhjfdnkli"
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
-              width: '100%',
-              padding: '0.5rem',
-              border: '1px solid #ddd',
+              color: '#000',
+              textDecoration: 'none',
+              padding: '0.5rem 1rem',
+              border: '1px solid #000',
               borderRadius: '4px'
             }}
-            placeholder="Enter your seed phrase"
-          />
+          >
+            Install GemWallet Extension
+          </a>
         </div>
-
+      ) : (
         <button
-          type="submit"
+          onClick={handleConnect}
           disabled={isLoading}
           style={{
             width: '100%',
@@ -104,28 +114,28 @@ const Login = () => {
             opacity: isLoading ? 0.7 : 1
           }}
         >
-          {isLoading ? 'Logging in...' : 'Login'}
+          {isLoading ? 'Connecting...' : 'Connect with GemWallet'}
         </button>
+      )}
 
-        <p style={{ 
-          marginTop: '1rem', 
-          textAlign: 'center',
-          color: '#666' 
-        }}>
-          Don't have a wallet?{' '}
-          <a 
-            href="/register" 
-            style={{ 
-              color: '#000', 
-              textDecoration: 'none' 
-            }}
-          >
-            Create one now
-          </a>
-        </p>
-      </form>
+      <p style={{
+        marginTop: '1rem',
+        textAlign: 'center',
+        color: '#666'
+      }}>
+        Don't have a wallet?{' '}
+        <a
+          href="https://chromewebstore.google.com/detail/gemwallet/egebedonbdapoieedfcfkofloclfghab"
+          style={{
+            color: '#000',
+            textDecoration: 'none'
+          }}
+        >
+          Create one now
+        </a>
+      </p>
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;

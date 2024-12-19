@@ -1,44 +1,64 @@
 import React, { useState } from 'react';
 import { ip } from '../../ip'
+import { isInstalled, acceptNFTOffer } from '@gemwallet/api';
+import { stringToHex } from '../../utils/StringToHex';
 
 export default function BuyOfferOnMyRWA({ nft, onOfferAccepted }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState(null);
-  const [seedPhrase, setSeedPhrase] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
 
   const handleAcceptOffer = async () => {
-    if (!seedPhrase || !selectedOffer) return;
+    if (!selectedOffer) return;
 
     setIsProcessing(true);
     setError('');
 
     try {
-      const response = await fetch(`${ip}/api/rwa/accept-buy-offer`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          nft_offer_index: selectedOffer.nft_offer_index,
-          seed: seedPhrase,
-          walletOwnerBuyRequest: selectedOffer.owner
-        })
-      });
+      const walletResponse = await isInstalled()
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to accept offer');
+      if (!walletResponse.result.isInstalled) {
+        setError('GemWallet extension is not installed')
+        setIsDeleting(false)
+        return
       }
 
-      // Success handling
-      onOfferAccepted && onOfferAccepted();
-      setIsModalOpen(false);
-      setSeedPhrase('');
-      setSelectedOffer(null);
+      const payload = {
+        NFTokenBuyOffer: selectedOffer.nft_offer_index,
+        fee: "20",
+        memos: [
+          {
+            memo: {
+              memoType: stringToHex('Accept'),
+              memoData: stringToHex('Accept buy NFT offer')
+            }
+          }
+        ]
+      };
+
+      const acceptNFTOfferResponse = await acceptNFTOffer(payload);
+      
+      if (acceptNFTOfferResponse.type === "response") {
+        const response = await fetch(`${ip}/api/rwa/accept-buy-offer`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({
+            tokenId: nft.tokenId,
+            walletOwnerBuyRequest: selectedOffer.owner
+          })
+        })
+        if (response.ok) {
+          onOfferAccepted && onOfferAccepted();
+          setIsModalOpen(false);
+          setSelectedOffer(null);
+        } else {
+          throw new Error('Failed to accept offer on the back')
+        }
+      }
     } catch (err) {
       setError(err.message || 'Failed to accept offer');
     } finally {
@@ -54,7 +74,6 @@ export default function BuyOfferOnMyRWA({ nft, onOfferAccepted }) {
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setSeedPhrase('');
     setSelectedOffer(null);
     setError('');
   };
@@ -130,19 +149,6 @@ export default function BuyOfferOnMyRWA({ nft, onOfferAccepted }) {
             <p style={{ marginBottom: '1rem' }}>
               You are about to accept a buy offer for {selectedOffer?.amount} drops from {selectedOffer?.owner}
             </p>
-            <input
-              type="password"
-              placeholder="Enter your seed phrase"
-              value={seedPhrase}
-              onChange={(e) => setSeedPhrase(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                marginBottom: '1rem',
-                border: '1px solid #ddd',
-                borderRadius: '4px'
-              }}
-            />
             {error && (
               <div style={{ color: 'red', marginBottom: '1rem' }}>
                 {error}
@@ -167,14 +173,13 @@ export default function BuyOfferOnMyRWA({ nft, onOfferAccepted }) {
               </button>
               <button
                 onClick={handleAcceptOffer}
-                disabled={!seedPhrase || isProcessing}
                 style={{
                   padding: '0.5rem 1rem',
-                  backgroundColor: seedPhrase ? 'green' : '#cccccc',
+                  backgroundColor: 'green',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '4px',
-                  cursor: seedPhrase ? 'pointer' : 'not-allowed',
+                  cursor: 'pointer',
                   opacity: isProcessing ? 0.7 : 1
                 }}
               >

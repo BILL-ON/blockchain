@@ -6,7 +6,7 @@ COPY package.json /app/
 RUN npm i 
 
 COPY swagger.yaml /app/
-copy server.js /app/
+COPY server.js /app/
 COPY config/ /app/config/
 COPY models/ /app/models/
 COPY routes/ /app/routes/
