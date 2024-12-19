@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { ip } from '../../ip';
+import { isInstalled, burnNFT } from "@gemwallet/api"
+import { stringToHex } from '../../utils/StringToHex'
 
 const DeleteRWAModal = ({ rwa, close, onSuccess }) => {
-  const [seed, setSeed] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -11,32 +12,54 @@ const DeleteRWAModal = ({ rwa, close, onSuccess }) => {
     setIsDeleting(true);
     setError(null);
 
-    try {
-      const response = await fetch(`${ip}/api/rwa/delete-rwa`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          tokenId: rwa.tokenId,
-          seed
-        })
-      });
+    const walletResponse = await isInstalled()
 
-      const data = await response.json();
-
-      if (response.ok) {
-        onSuccess(); // Optional callback for success
-        close();
-      } else {
-        throw new Error(data.error || 'Failed to delete RWA');
-      }
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setIsDeleting(false);
+    if (!walletResponse.result.isInstalled) {
+      setError('GemWallet extension is not installed')
+      setIsDeleting(false)
+      return
     }
+
+    const burnPayload = {
+      NFTokenID: rwa.tokenId,
+      fee: "20",
+      memos: [
+        {
+          memo: {
+            memoType: stringToHex("Delete"),
+            memoData: stringToHex("RWA NFT Deletion")
+          }
+        }
+      ]
+    }
+
+    const burnResponse = await burnNFT(burnPayload)
+
+      try {
+        const response = await fetch(`${ip}/api/rwa/delete-rwa`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({
+            tokenId: rwa.tokenId
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          onSuccess();
+          close();
+        } else {
+          throw new Error(data.error || 'Failed to delete RWA');
+        }
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setIsDeleting(false);
+      }
   };
 
   return (
@@ -81,25 +104,6 @@ const DeleteRWAModal = ({ rwa, close, onSuccess }) => {
             }}>
               Are you sure you want to delete this RWA? This action cannot be undone.
             </p>
-          </div>
-
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-              Seed Phrase:
-            </label>
-            <input
-              type="password"
-              value={seed}
-              onChange={(e) => setSeed(e.target.value)}
-              required
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid #ddd',
-                borderRadius: '4px'
-              }}
-              placeholder="Enter your seed phrase to confirm"
-            />
           </div>
 
           <div style={{ display: 'flex', gap: '1rem' }}>

@@ -150,10 +150,6 @@ const MyAssets = () => {
                     <strong>Valuation:</strong><br/>
                     {asset.valuation}
                   </div>
-                  <div>
-                    <strong>Created:</strong><br/>
-                    {new Date(asset.createdAt).toLocaleDateString()}
-                  </div>
                 </div>
                 <div style={{
                   marginTop: '1rem',

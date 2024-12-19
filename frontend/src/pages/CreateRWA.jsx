@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getAddress, isInstalled, mintNFT } from "@gemwallet/api"
+import { isInstalled, mintNFT } from "@gemwallet/api"
 import { ip } from '../ip'
+import { stringToHex } from '../utils/StringToHex'
 
 const CreateRWA = () => {
   const navigate = useNavigate()
@@ -14,12 +15,6 @@ const CreateRWA = () => {
     location: '',
     size: ''
   })
-
-  const stringToHex = (str) => {
-    return Array.from(new TextEncoder().encode(str))
-      .map(byte => byte.toString(16).padStart(2, '0'))
-      .join('')
-  }
 
   const handleChange = (e) => {
     setFormData({

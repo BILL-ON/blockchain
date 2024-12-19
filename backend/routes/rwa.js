@@ -57,42 +57,21 @@ router.get('/all', authenticateToken, async (req, res) => {
 
 router.delete('/delete-rwa', authenticateToken, async (req, res) => {
     try {
-        const { tokenId, seed } = req.body;
+        const { tokenId } = req.body;
         const walletAddress = req.user.walletAddress;
 
-        if (!tokenId || !seed || !walletAddress) {
+        if (!tokenId || !walletAddress) {
             console.error("Missing fields!")
             res.status(400).json({
                 error: "Missing fields"
             })
             return
         }
+        await RWA.deleteOne({ tokenId: tokenId });
 
-        const tokenTx = {
-            TransactionType: 'NFTokenBurn',
-            Account: walletAddress,
-            NFTokenID: tokenId
-        };
-
-        const wallet = xrpl.Wallet.fromSeed(seed);
-        const signedTx = await client.submitAndWait(tokenTx, { wallet });
-
-        if (signedTx.result.meta.TransactionResult === 'tesSUCCESS') {
-            try {
-                await RWA.deleteOne({ tokenId: tokenId });
-            } catch (dbError) {
-                console.log('Database deletion failed:', dbError);
-            }
-
-            res.json({
-                tokenId: tokenId,
-                transaction: signedTx.result.meta.TransactionResult
-            })
-        } else {
-            res.status(500).json({
-                error: signedTx.result.meta.TransactionResult
-            })
-        }
+        res.json({
+            tokenId: tokenId
+        })
     } catch (error) {
         console.error("ERROR when deleting token: ", error);
         res.status(500).json({
@@ -106,7 +85,7 @@ router.get('/my-assets', authenticateToken, async (req, res) => {
     try {
         const rwas = await client.request({
             command: 'account_nfts',
-            account: req.user.walletAddress
+            account: req.user.walletAddress.result.address
         });
 
         const assets = rwas.result.account_nfts.map(nft => {
