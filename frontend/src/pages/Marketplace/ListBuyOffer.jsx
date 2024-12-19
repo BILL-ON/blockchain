@@ -83,34 +83,6 @@ export default function ListBuyOffer({ closePage, tokenId, updateBuyList }) {
     } finally {
       setIsLoading(false);
     }
-
-    // try {
-    //   const response = await fetch(`${ip}/api/rwa/cancel-buy-offer`, {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //       'Authorization': `Bearer ${localStorage.getItem('token')}`
-    //     },
-    //     body: JSON.stringify({
-    //       tokenOfferId: selectedOffer.nft_offer_index
-    //     })
-    //   });
-
-    //   const data = await response.json();
-      
-    //   if (!response.ok) {
-    //     throw new Error(data.error || 'Failed to cancel offer');
-    //   }
-
-    //   // Success handling
-    //   alert('Offer cancelled successfully');
-    //   await fetchRWAsListOffers(); // Refresh the offers list
-    //   closeModal();
-    // } catch (error) {
-    //   alert(error.message || 'Failed to cancel offer');
-    // } finally {
-    //   setIsLoading(false);
-    // }
   };
 
   const closeModal = () => {
