@@ -7,18 +7,17 @@ const RWA = require('../models/RWA');
 
 router.post('/create', authenticateToken, async (req, res) => {
     try {
-        const { name, description, valuation, location, size, seed } = req.body;
-        const walletAddress = req.user.walletAddress;
+        const { name, description, valuation, location, size, nftId } = req.body;
+        const walletAddress = req.user.walletAddress.result.address;
 
-        if (!name || !description || !valuation || !location || !size || !seed) {
+        if (!name || !description || !valuation || !location || !size) {
             console.error("Missing fields!")
             res.status(400).json({
                 error: "Missing fields"
             })
             return
         }
-
-        const metadata = {
+        const newRWA = new RWA({
             name,
             description,
             valuation,
@@ -26,44 +25,15 @@ router.post('/create', authenticateToken, async (req, res) => {
                 location,
                 size
             },
-            createdAt: new Date().toISOString()
-        }
+            tokenId: nftId,
+            walletAddress
+        })
 
-        const tokenTx = {
-            TransactionType: "NFTokenMint",
-            Account: walletAddress,
-            NFTokenTaxon: 0,
-            Flags: 8,
-            URI: xrpl.convertStringToHex(JSON.stringify(metadata))
-        }
+        await newRWA.save();
 
-        const wallet = xrpl.Wallet.fromSeed(seed);
-        const signedTx = await client.submitAndWait(tokenTx, { wallet });
-
-        if (signedTx.result.meta.TransactionResult === 'tesSUCCESS') {
-            const newRWA = new RWA({
-                name,
-                description,
-                valuation,
-                properties: {
-                    location,
-                    size
-                },
-                tokenId: signedTx.result.meta.nftoken_id,
-                walletAddress
-            })
-
-            await newRWA.save();
-
-            res.json({
-                tokenId: signedTx.result.meta.nftoken_id,
-                metadata
-            });
-        } else {
-            res.status(500).json({
-                error: response.result.meta.TransactionResult
-            })
-        }
+        res.json({
+            tokenId: nftId,
+        });
     } catch (error) {
         console.error('RWA creation error : ', error)
         res.status(500).json({
