@@ -7,10 +7,9 @@ const RWA = require('../models/RWA');
 
 router.post('/accept-buy-offer', authenticateToken, async (req, res) => {
     try {
-        const { nft_offer_index, seed, walletOwnerBuyRequest } = req.body;
-        const walletAddress = req.user.walletAddress;
+        const { tokenId, walletOwnerBuyRequest } = req.body;
 
-        if (!nft_offer_index || !seed) {
+        if (!tokenId || !walletOwnerBuyRequest) {
             console.error("Missing fields!")
             res.status(400).json({
                 error: "Missing fields"
@@ -18,37 +17,16 @@ router.post('/accept-buy-offer', authenticateToken, async (req, res) => {
             return
         }
 
-        const acceptBuyOfferTx = {
-            TransactionType: "NFTokenAcceptOffer",
-            Account: walletAddress,
-            NFTokenBuyOffer: nft_offer_index
-        }
+        // Update the RWA database record with the new owner (buyer's address)
+        await RWA.findOneAndUpdate(
+            { tokenId: tokenId },
+            { walletAddress: walletOwnerBuyRequest },
+            { new: true }
+        );
 
-        const wallet = xrpl.Wallet.fromSeed(seed);
-        const signedTx = await client.submitAndWait(acceptBuyOfferTx, { wallet });
-
-        console.log(signedTx)
-
-        if (signedTx.result.meta.TransactionResult === 'tesSUCCESS') {
-            try {
-                // Update the RWA database record with the new owner (buyer's address)
-                await RWA.findOneAndUpdate(
-                    { tokenId: signedTx.result.meta.nftoken_id },
-                    { walletAddress: walletOwnerBuyRequest },
-                    { new: true }
-                );
-            } catch (dbError) {
-                console.log('Database update failed:', dbError);
-            }
-
-            res.json({
-                res: signedTx.result.meta.TransactionResult
-            })
-        } else {
-            res.status(500).json({
-                error: signedTx.result.meta.TransactionResult
-            })
-        }
+        res.json({
+            res: tokenId
+        })
     } catch (error) {
         console.error("Error when accepting buy offer", error);
         res.status(500).json({
