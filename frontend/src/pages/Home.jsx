@@ -39,7 +39,7 @@ export default function Home() {
         }}>
           Explore
         </button>
-        <button onClick={() => {navigate('/register')}}  style={{
+        <button onClick={() => {navigate('/Faq')}}  style={{
           padding: '0.5rem 1rem',
           backgroundColor: '#fff',
           color: '#000',

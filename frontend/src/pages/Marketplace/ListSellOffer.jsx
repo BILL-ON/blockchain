@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { ip } from '../../ip'
+import { isInstalled, acceptNFTOffer } from '@gemwallet/api';
+import { stringToHex } from '../../utils/StringToHex';
 
 export default function ListSellOffer({ closePage, tokenId }) {
   const [offers, setOffers] = useState([])
   const [selectedOffer, setSelectedOffer] = useState(null)
-  const [seed, setSeed] = useState('')  
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
@@ -35,24 +36,47 @@ export default function ListSellOffer({ closePage, tokenId }) {
     e.preventDefault()
     setIsLoading(true)
     try {
-      const response = await fetch(`${ip}/api/rwa/accept-sell-offer`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          nft_offer_index: selectedOffer.nft_offer_index,
-          seed
-        })
-      })
+
+      const walletResponse = await isInstalled()
+
+      if (!walletResponse.result.isInstalled) {
+        setError('GemWallet extension is not installed')
+        setIsDeleting(false)
+        return
+      }
+
+      const payload = {
+        NFTokenSellOffer: selectedOffer.nft_offer_index,
+        fee: "20",
+        memos: [
+          {
+            memo: {
+              memoType: stringToHex('Accept'),
+              memoData: stringToHex('Accept sell NFT offer')
+            }
+          }
+        ]
+      };
+
+      const acceptNFTOfferResponse = await acceptNFTOffer(payload);
       
-      if (response.ok) {
-        setSelectedOffer(null)
-        setSeed('')
-        closePage()
-      } else {
-        throw new Error('Failed to accept offer')
+      if (acceptNFTOfferResponse.type === "response") {
+        const response = await fetch(`${ip}/api/rwa/accept-sell-offer`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({
+            tokenId
+          })
+        })
+        if (response.ok) {
+          setSelectedOffer(null)
+          closePage()
+        } else {
+          throw new Error('Failed to accept offer on the back')
+        }
       }
     } catch (error) {
       alert('Failed to buy: ' + error.message)
@@ -120,23 +144,6 @@ export default function ListSellOffer({ closePage, tokenId }) {
           }}>
             <h3 style={{ marginBottom: '1.5rem' }}>Buy NFT for {selectedOffer.amount} drops</h3>
             <form onSubmit={handleBuy}>
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-                  Seed Phrase:
-                </label>
-                <input
-                  type="password"
-                  value={seed}
-                  onChange={(e) => setSeed(e.target.value)}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px'
-                  }}
-                />
-              </div>
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <button
                   type="submit"
@@ -157,7 +164,6 @@ export default function ListSellOffer({ closePage, tokenId }) {
                   type="button"
                   onClick={() => {
                     setSelectedOffer(null)
-                    setSeed('')
                   }}
                   style={{
                     flex: 1,

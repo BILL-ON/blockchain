@@ -1,7 +1,8 @@
-// src/pages/CreateRWA.jsx
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { isInstalled, mintNFT } from "@gemwallet/api"
 import { ip } from '../ip'
+import { stringToHex } from '../utils/StringToHex'
 
 const CreateRWA = () => {
   const navigate = useNavigate()
@@ -12,8 +13,7 @@ const CreateRWA = () => {
     description: '',
     valuation: '',
     location: '',
-    size: '',
-    seed: ''
+    size: ''
   })
 
   const handleChange = (e) => {
@@ -29,29 +29,78 @@ const CreateRWA = () => {
     setError('')
 
     try {
-      const response = await fetch(`${ip}/api/rwa/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const walletResponse = await isInstalled()
+      if (!walletResponse.result.isInstalled) {
+        setError('GemWallet extension is not installed')
+        setIsLoading(false)
+        return
+      }
+
+      const metadata = {
+        name: formData.name,
+        description: formData.description,
+        properties: {
+          valuation: formData.valuation,
+          location: formData.location,
+          size: formData.size
+        }
+      }
+
+      const metadataHex = stringToHex(JSON.stringify(metadata))
+
+      const mintPayload = {
+        URI: metadataHex,
+        flags: {
+          tfOnlyXRP: true,
+          tfTransferable: true,
+          tfBurnable: true
         },
-        body: JSON.stringify(formData)
-      })
+        NFTokenTaxon: 0,
+        transferFee: 0,
+        memos: [
+          {
+            memo: {
+              memoType: stringToHex('Description'),
+              memoData: stringToHex(formData.description)
+            }
+          }
+        ]
+      }
 
-      const data = await response.json()
+      const mintResponse = await mintNFT(mintPayload)
+      
+      if (mintResponse.type === 'response' && mintResponse.result) {
+        const response = await fetch(`${ip}/api/rwa/create`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({
+            ...formData,
+            nftId: mintResponse.result.NFTokenID,
+            transactionHash: mintResponse.result.hash
+          })
+        })
 
-      if (response.ok) {
-        navigate('/myassets') // or wherever you want to redirect after creation
+        const data = await response.json()
+
+        if (response.ok) {
+          navigate('/myassets')
+        } else {
+          setError(data.error || 'Creation failed')
+        }
       } else {
-        setError(data.error || 'Creation failed')
+        setError('NFT minting failed')
       }
     } catch (err) {
-      setError('Creation failed')
+      setError(err.message || 'Creation failed')
     } finally {
       setIsLoading(false)
     }
   }
 
+  // Rest of the component remains the same...
   return (
     <div style={{
       maxWidth: '600px',
@@ -157,25 +206,6 @@ const CreateRWA = () => {
             type="text"
             name="size"
             value={formData.size}
-            onChange={handleChange}
-            required
-            style={{
-              width: '100%',
-              padding: '0.5rem',
-              border: '1px solid #ddd',
-              borderRadius: '4px'
-            }}
-          />
-        </div>
-
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-            Seed Phrase:
-          </label>
-          <input
-            type="password"
-            name="seed"
-            value={formData.seed}
             onChange={handleChange}
             required
             style={{

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { ip } from '../../ip';
+import { isInstalled, cancelNFTOffer } from '@gemwallet/api';
+import { stringToHex } from '../../utils/StringToHex';
 
 export default function ListBuyOffer({ closePage, tokenId, updateBuyList }) {
   const [offers, setOffers] = useState([]);
   const [selectedOffer, setSelectedOffer] = useState(null);
-  const [seed, setSeed] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [userWalletAddress, setUserWalletAddress] = useState('');
 
@@ -17,7 +18,7 @@ export default function ListBuyOffer({ closePage, tokenId, updateBuyList }) {
     try {
       const token = localStorage.getItem('token');
       const payload = JSON.parse(atob(token.split('.')[1]));
-      setUserWalletAddress(payload.walletAddress);
+      setUserWalletAddress(payload.walletAddress.result.address);
     } catch (error) {
       console.error('Error getting wallet address:', error);
     }
@@ -42,34 +43,43 @@ export default function ListBuyOffer({ closePage, tokenId, updateBuyList }) {
 
   const handleCancelOffer = async (e) => {
     e.preventDefault();
-    if (!selectedOffer || !seed) return;
+    if (!selectedOffer) return;
 
     setIsLoading(true);
-    try {
-      const response = await fetch(`${ip}/api/rwa/cancel-buy-offer`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          tokenOfferId: selectedOffer.nft_offer_index,
-          seed: seed
-        })
-      });
 
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to cancel offer');
+    try {
+
+
+      const walletResponse = await isInstalled()
+
+      if (!walletResponse.result.isInstalled) {
+        setError('GemWallet extension is not installed')
+        setIsDeleting(false)
+        return
       }
 
-      // Success handling
-      alert('Offer cancelled successfully');
-      await fetchRWAsListOffers(); // Refresh the offers list
-      closeModal();
+      const payload = {
+        NFTokenOffers: [selectedOffer.nft_offer_index],
+        fee: "20",
+        memos: [
+          {
+            memo: {
+              memoType: stringToHex('Cancel'),
+              memoData: stringToHex('Cancel NFT buy offer')
+            }
+          }
+        ]
+      };
+
+      const cancelResponse = await cancelNFTOffer(payload);
+      
+      console.log(cancelResponse)
+      if (cancelResponse.type === "response") {
+        await fetchRWAsListOffers(); // Refresh the offers list
+        closeModal();
+      }
     } catch (error) {
-      alert(error.message || 'Failed to cancel offer');
+      alert('Failed to cancel offer')
     } finally {
       setIsLoading(false);
     }
@@ -77,7 +87,6 @@ export default function ListBuyOffer({ closePage, tokenId, updateBuyList }) {
 
   const closeModal = () => {
     setSelectedOffer(null);
-    setSeed('');
   };
 
   const isUserOffer = (offer) => {
@@ -160,23 +169,6 @@ export default function ListBuyOffer({ closePage, tokenId, updateBuyList }) {
           }}>
             <h3 style={{ marginBottom: '1.5rem' }}>Cancel Buy Offer for {selectedOffer.amount} drops</h3>
             <form onSubmit={handleCancelOffer}>
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-                  Seed Phrase:
-                </label>
-                <input
-                  type="password"
-                  value={seed}
-                  onChange={(e) => setSeed(e.target.value)}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px'
-                  }}
-                />
-              </div>
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <button
                   type="submit"
