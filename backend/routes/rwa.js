@@ -45,7 +45,7 @@ router.post('/create', authenticateToken, async (req, res) => {
 // ALL EXCEPT HIS OWN
 router.get('/all', authenticateToken, async (req, res) => {
     try {
-        const walletAddress = req.user.walletAddress;
+        const walletAddress = req.user.walletAddress.result.address;
         // Using $ne (not equal) to exclude the user's own RWAs
         const rwaList = await RWA.find({ walletAddress: { $ne: walletAddress } });
         res.json(rwaList);
@@ -58,7 +58,7 @@ router.get('/all', authenticateToken, async (req, res) => {
 router.delete('/delete-rwa', authenticateToken, async (req, res) => {
     try {
         const { tokenId } = req.body;
-        const walletAddress = req.user.walletAddress;
+        const walletAddress = req.user.walletAddress.result.address;
 
         if (!tokenId || !walletAddress) {
             console.error("Missing fields!")
@@ -158,7 +158,7 @@ router.post('/accept-sell-offer', authenticateToken, async (req, res) => {
     try {
 
         const { nft_offer_index, seed } = req.body;
-        const walletAddress = req.user.walletAddress;
+        const walletAddress = req.user.walletAddress.result.address;
 
         if (!nft_offer_index || !seed) {
             console.error("Missing fields!")

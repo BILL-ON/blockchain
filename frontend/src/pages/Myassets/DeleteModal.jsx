@@ -35,31 +35,31 @@ const DeleteRWAModal = ({ rwa, close, onSuccess }) => {
 
     const burnResponse = await burnNFT(burnPayload)
 
-      try {
-        const response = await fetch(`${ip}/api/rwa/delete-rwa`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({
-            tokenId: rwa.tokenId
-          })
-        });
+    try {
+      const response = await fetch(`${ip}/api/rwa/delete-rwa`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          tokenId: rwa.tokenId
+        })
+      });
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (response.ok) {
-          onSuccess();
-          close();
-        } else {
-          throw new Error(data.error || 'Failed to delete RWA');
-        }
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setIsDeleting(false);
+      if (response.ok) {
+        onSuccess();
+        close();
+      } else {
+        throw new Error(data.error || 'Failed to delete RWA');
       }
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { ip } from '../ip'
 import BuyOfferOnMyRWA from './MyOffers/BuyOfferOnMyRWA'
+import { isInstalled, cancelNFTOffer } from "@gemwallet/api"
+import { stringToHex } from '../utils/StringToHex'
 
 const MyNFTsAndOffers = () => {
   const [nfts, setNfts] = useState([])
@@ -8,7 +10,6 @@ const MyNFTsAndOffers = () => {
   const [error, setError] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedOfferId, setSelectedOfferId] = useState(null)
-  const [seedPhrase, setSeedPhrase] = useState('')
   const [isCancellingOffer, setIsCancellingOffer] = useState(false)
 
   useEffect(() => {
@@ -85,26 +86,36 @@ const MyNFTsAndOffers = () => {
   const handleCancelOffer = async () => {
     setIsCancellingOffer(true);
     try {
-      const response = await fetch(`${ip}/api/rwa/cancel-sell-offer`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          tokenOfferId: selectedOfferId,
-          seed: seedPhrase
-        })
-      })
 
-      if (response.ok) {
+
+      const walletResponse = await isInstalled()
+
+      if (!walletResponse.result.isInstalled) {
+        setError('GemWallet extension is not installed')
+        setIsDeleting(false)
+        return
+      }
+
+      const payload = {
+        NFTokenOffers: [selectedOfferId],
+        fee: "20",
+        memos: [
+          {
+            memo: {
+              memoType: stringToHex('Cancel'),
+              memoData: stringToHex('Cancel NFT offer')
+            }
+          }
+        ]
+      };
+
+      const cancelResponse = await cancelNFTOffer(payload);
+      
+      console.log(cancelResponse)
+      if (cancelResponse.type === "response") {
         fetchNFTs()
         setIsModalOpen(false)
-        setSeedPhrase('')
         setSelectedOfferId(null)
-      } else {
-        const data = await response.json()
-        throw new Error(data.error)
       }
     } catch (error) {
       alert('Failed to cancel offer: ' + error.message)
@@ -247,19 +258,6 @@ const MyNFTsAndOffers = () => {
             maxWidth: '400px'
           }}>
             <h3 style={{ marginBottom: '1rem' }}>Cancel Offer</h3>
-            <input
-              type="password"
-              placeholder="Enter your seed phrase"
-              value={seedPhrase}
-              onChange={(e) => setSeedPhrase(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                marginBottom: '1rem',
-                border: '1px solid #ddd',
-                borderRadius: '4px'
-              }}
-            />
             <div style={{
               display: 'flex',
               gap: '1rem',
@@ -268,7 +266,6 @@ const MyNFTsAndOffers = () => {
               <button
                 onClick={() => {
                   setIsModalOpen(false)
-                  setSeedPhrase('')
                   setSelectedOfferId(null)
                 }}
                 style={{
@@ -282,15 +279,14 @@ const MyNFTsAndOffers = () => {
                 Cancel
               </button>
               <button
-                onClick={handleCancelOffer}
-                disabled={!seedPhrase || isCancellingOffer}
+                onClick={() => {handleCancelOffer()}}
                 style={{
                   padding: '0.5rem 1rem',
-                  backgroundColor: seedPhrase ? '#ff4444' : '#ffaaaa',
+                  backgroundColor: '#ff4444',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '4px',
-                  cursor: seedPhrase ? 'pointer' : 'not-allowed',
+                  cursor: 'pointer',
                   opacity: isCancellingOffer ? 0.7 : 1
                 }}
               >
