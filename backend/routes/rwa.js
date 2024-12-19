@@ -124,43 +124,6 @@ router.get('/my-assets', authenticateToken, async (req, res) => {
     }
 })
 
-router.post('/create-sell-offer', authenticateToken, async (req, res) => {
-    try {
-
-        const { tokenID, amount, seed } = req.body;
-        const walletAddress = req.user.walletAddress;
-
-        if (!tokenID || !amount || !seed || !walletAddress) {
-            console.error("Missing fields!")
-            res.status(400).json({
-                error: "Missing fields"
-            })
-            return
-        }
-
-        const sellOfferTx = {
-            TransactionType: "NFTokenCreateOffer",
-            Account: walletAddress,
-            NFTokenID: tokenID,
-            Amount: xrpl.xrpToDrops(amount),
-            Flags: 1
-        };
-
-        const wallet = xrpl.Wallet.fromSeed(seed);
-        const signedTx = await client.submitAndWait(sellOfferTx, { wallet });
-
-        res.json({
-            offerID: signedTx.result.offer_id,
-            transaction: signedTx.result
-        })
-    } catch (error) {
-        console.error("ERROR when offer was created: ", error);
-        res.status(500).json({
-            error: "Failed to create sell offer"
-        })
-    }
-})
-
 router.post('/list-sell-offers', authenticateToken, async (req, res) => {
     try {
         const { tokenID } = req.body;
