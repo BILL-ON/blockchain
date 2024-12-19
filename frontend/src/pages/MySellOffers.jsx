@@ -111,7 +111,6 @@ const MyNFTsAndOffers = () => {
 
       const cancelResponse = await cancelNFTOffer(payload);
       
-      console.log(cancelResponse)
       if (cancelResponse.type === "response") {
         fetchNFTs()
         setIsModalOpen(false)

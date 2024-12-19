@@ -157,10 +157,10 @@ router.post('/list-sell-offers', authenticateToken, async (req, res) => {
 router.post('/accept-sell-offer', authenticateToken, async (req, res) => {
     try {
 
-        const { nft_offer_index, seed } = req.body;
+        const { tokenId } = req.body;
         const walletAddress = req.user.walletAddress.result.address;
 
-        if (!nft_offer_index || !seed) {
+        if (!tokenId) {
             console.error("Missing fields!")
             res.status(400).json({
                 error: "Missing fields"
@@ -168,34 +168,14 @@ router.post('/accept-sell-offer', authenticateToken, async (req, res) => {
             return
         }
 
-
-        const acceptSellOfferTx = {
-            TransactionType: "NFTokenAcceptOffer",
-            Account: walletAddress,
-            NFTokenSellOffer: nft_offer_index
-        }
-
-        const wallet = xrpl.Wallet.fromSeed(seed);
-        const signedTx = await client.submitAndWait(acceptSellOfferTx, { wallet });
-
-        if (signedTx.result.meta.TransactionResult === 'tesSUCCESS') {
-            try {
-                await RWA.findOneAndUpdate(
-                    { tokenId: signedTx.result.meta.nftoken_id }, // Find by tokenId
-                    { walletAddress: walletAddress }, // Update owner to buyer's address
-                    { new: true }
-                );
-            } catch (dbError) {
-                console.log('Database update failed:', dbError);
-            }
-            res.json({
-                res: signedTx.result.meta.TransactionResult
-            })
-        } else {
-            res.status(500).json({
-                error: signedTx.result.meta.TransactionResult
-            })
-        }
+        await RWA.findOneAndUpdate(
+            { tokenId: tokenId }, // Find by tokenId
+            { walletAddress: walletAddress }, // Update owner to buyer's address
+            { new: true }
+        );
+        res.json({
+            res: tokenId
+        })
 
     } catch (error) {
         console.error("Error when accepting sell offer", error);
