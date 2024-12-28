@@ -3,6 +3,7 @@ import { ip } from '../ip'
 import BuyOfferOnMyRWA from './MyOffers/BuyOfferOnMyRWA'
 import { isInstalled, cancelNFTOffer } from "@gemwallet/api"
 import { stringToHex } from '../utils/StringToHex'
+import WalletBalance from '../components/getBalance'
 
 const MyNFTsAndOffers = () => {
   const [nfts, setNfts] = useState([])
@@ -133,6 +134,7 @@ const MyNFTsAndOffers = () => {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '2rem auto', padding: '0 1rem' }}>
+      <WalletBalance />
       <h2 style={{ marginBottom: '2rem' }}>My NFTs and Offers</h2>
 
       <div style={{ display: 'grid', gap: '2rem' }}>

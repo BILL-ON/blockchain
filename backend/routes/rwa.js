@@ -185,6 +185,29 @@ router.post('/accept-sell-offer', authenticateToken, async (req, res) => {
 
 })
 
+router.get('/get-balance', authenticateToken, async (req, res) => {
+    try {
+        const walletAddress = req.user.walletAddress.result.address;
 
+        if (!walletAddress) {
+            console.error("Missing fields!")
+            res.status(400).json({
+                error: "Missing fields"
+            })
+        }
+
+        const xrpBalance = await client.getXrpBalance(walletAddress)
+
+        res.json({
+            balanceXrp: xrpBalance
+        });
+
+    } catch (err) {
+        console.error("Error when gettinb balance : ", err);
+        res.status(500).json({
+            error: err
+        })
+    }
+})
 
 module.exports = router;
