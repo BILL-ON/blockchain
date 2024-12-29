@@ -1,584 +1,154 @@
 openapi: 3.0.0
 info:
-  title: XRP Wallet API
+  title: RWA API
   version: 1.0.0
-  description: API for managing XRP wallets and authentication.
-
-paths:
-
-  /api/auth/create-wallet:
-    post:
-      summary: Create a new XRP wallet
-      tags: 
-        - AuthWallets
-      description: Generates a new XRP wallet, including address, public key and seed, for the user.
-      requestBody:
-        required: false
-      responses:
-        '200':
-          description: Successfully created a new wallet.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  wallet:
-                    type: object
-                    properties:
-                      address:
-                        type: string
-                      publicKey:
-                        type: string
-              example:
-                success: true
-                wallet:
-                  address: "rT3hR7u4EjkTyUv5g1txfM8VEXAMPLe99v"
-                  publicKey: "EDuKd5MRNxSpxXm8qkjF7sXkzVJXvhB8W5"
-
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  error:
-                    type: string
-              example:
-                success: false
-                error: "Server error during wallet creation."
-
-  /api/auth/login:
-    post:
-      summary: Login with an XRP wallet using a seed
-      tags: 
-        - AuthWallets
-      description: Authenticates a user by validating their XRP wallet seed and returns a JWT token for session management.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - seed
-              properties:
-                seed:
-                  type: string
-                  description: The seed of the XRP wallet used for authentication.
-            example:
-              seed: "s████████████████████████████"
-      responses:
-        '200':
-          description: Successfully logged in and generated a JWT token.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  wallet:
-                    type: object
-                    properties:
-                      address:
-                        type: string
-                      publicKey:
-                        type: string
-                  token:
-                    type: string
-              example:
-                success: true
-                wallet:
-                  address: "rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv"
-                  publicKey: "ED████████████████████████████████"
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        '400':
-          description: Missing seed in the request body.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  error:
-                    type: string
-              example:
-                success: false
-                error: "Seed is missing!!!!!!!"
-        '401':
-          description: Invalid seed provided.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  error:
-                    type: string
-              example:
-                success: false
-                error: "Invalid seed"
-
-  /api/rwa/create:
-    post:
-      summary: Create a new RWA token
-      tags:
-        - RWAs
-      description: Mints a new RWA (Real World Asset) token by creating metadata and submitting the transaction to the XRP ledger.
-      security:
-        - bearerAuth: []  # Indicates the use of JWT token for authentication
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - name
-                - description
-                - valuation
-                - location
-                - size
-                - seed
-              properties:
-                name:
-                  type: string
-                  description: Name of the RWA.
-                description:
-                  type: string
-                  description: Description of the RWA.
-                valuation:
-                  type: number
-                  description: Valuation of the RWA.
-                location:
-                  type: string
-                  description: Location of the RWA.
-                size:
-                  type: string
-                  description: Size of the RWA.
-                seed:
-                  type: string
-                  description: The seed of the XRP wallet used for signing the transaction.
-            example:
-              name: "Building A"
-              description: "A commercial real estate property"
-              valuation: 1000000
-              location: "New York"
-              size: "5000 sqft"
-              seed: "s████████████████████████████"
-      responses:
-        '200':
-          description: Successfully created the RWA token.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  tokenId:
-                    type: string
-                    description: The token ID of the newly created RWA.
-                  metadata:
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                      description:
-                        type: string
-                      valuation:
-                        type: number
-                      properties:
-                        type: object
-                        properties:
-                          location:
-                            type: string
-                          size:
-                            type: string
-                      createdAt:
-                        type: string
-                        format: date-time
-              example:
-                tokenId: "abc123456"
-                metadata:
-                  name: "Building A"
-                  description: "A commercial real estate property"
-                  valuation: 1000000
-                  properties:
-                    location: "New York"
-                    size: "5000 sqft"
-                  createdAt: "2024-12-13T00:00:00Z"
-        '400':
-          description: Missing required fields in the request body.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-              example:
-                error: "Missing fields"
-        '500':
-          description: Internal server error when creating the RWA token.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-              example:
-                error: "Creation failed"
-  
-  /api/rwa/my-assets:
-    get:
-      summary: Retrieve user's assets (RWAs)
-      tags:
-        - RWAs
-      description: Fetches a list of the user's Real World Assets (RWAs) associated with their wallet address.
-      security:
-        - bearerAuth: []  # Requires JWT token
-      responses:
-        '200':
-          description: Successfully fetched the user's RWAs.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  assets:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        tokenId:
-                          type: string
-                        name:
-                          type: string
-                        description:
-                          type: string
-                        valuation:
-                          type: number
-                        properties:
-                          type: object
-                          properties:
-                            location:
-                              type: string
-                            size:
-                              type: string
-                        error:
-                          type: string
-              example:
-                assets: 
-                  - tokenId: "abc123"
-                    name: "Building A"
-                    description: "A commercial real estate property"
-                    valuation: 1000000
-                    properties:
-                      location: "New York"
-                      size: "5000 sqft"
-                  - tokenId: "xyz789"
-                    error: "No URI"
-        '500':
-          description: Internal server error while fetching assets.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-              example:
-                error: "Failed to fetch assets"
-
-  /api/rwa/create-sell-offer:
-    post:
-      summary: Create a new sell offer for an RWA token
-      tags:
-        - OfferRWAs
-      description: Creates a sell offer for an existing RWA token on the XRP ledger.
-      security:
-        - bearerAuth: []  # Requires JWT token
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - tokenID
-                - amount
-                - seed
-              properties:
-                tokenID:
-                  type: string
-                  description: The ID of the token being offered for sale.
-                amount:
-                  type: number
-                  description: The amount to sell the token for.
-                seed:
-                  type: string
-                  description: The seed of the wallet used to sign the transaction.
-            example:
-              tokenID: "abc123"
-              amount: 500000
-              seed: "s████████████████████████████"
-      responses:
-        '200':
-          description: Successfully created the sell offer.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  offerID:
-                    type: string
-                    description: The ID of the created sell offer.
-                  transaction:
-                    type: object
-                    description: The full transaction details.
-              example:
-                offerID: "offer123456"
-                transaction:
-                  TransactionType: "NFTokenCreateOffer"
-                  Account: "rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv"
-                  Amount: 500000
-                  Flags: 1
-        '400':
-          description: Missing required fields in the request body.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-              example:
-                error: "Missing fields"
-        '500':
-          description: Internal server error when creating the sell offer.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-              example:
-                error: "Failed to create sell offer"
-
-  /api/rwa/list-sell-offers:
-    post:
-      summary: List sell offers for a specific RWA token
-      tags:
-        - OfferRWAs
-      description: Retrieves a list of sell offers for a specific RWA token from the XRP ledger.
-      security:
-        - bearerAuth: []  # Requires JWT token
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - tokenID
-              properties:
-                tokenID:
-                  type: string
-                  description: The ID of the token for which sell offers are being requested.
-            example:
-              tokenID: "abc123"
-      responses:
-        '200':
-          description: Successfully fetched the list of sell offers.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  OfferRWAselloffers:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        offerID:
-                          type: string
-                          description: The ID of the sell offer.
-                        amount:
-                          type: number
-                          description: The amount for which the RWA token is being sold.
-                  TokenID:
-                    type: string
-                    description: The ID of the token for which sell offers were fetched.
-              example:
-                OfferRWAselloffers:
-                  - offerID: "offer123"
-                    amount: 500000
-                TokenID: "abc123"
-        '400':
-          description: Missing required `tokenID` in the request body.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-              example:
-                error: "Missing fields"
-        '500':
-          description: No sell offers found for the specified RWA token.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-              example:
-                msg: "no sell offers!!"
-
-  /api/rwa/accept-sell-offer:
-    post:
-      summary: Accept a sell offer for an RWA token
-      tags:
-        - OfferRWAs
-      description: Accepts an existing sell offer for an RWA token by its offer index.
-      security:
-        - bearerAuth: []  # Requires JWT token
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - nft_offer_index
-                - seed
-              properties:
-                nft_offer_index:
-                  type: string
-                  description: The index of the sell offer to be accepted.
-                seed:
-                  type: string
-                  description: The seed of the wallet used to sign the transaction.
-            example:
-              nft_offer_index: "offer123"
-              seed: "s████████████████████████████"
-      responses:
-        '200':
-          description: Successfully accepted the sell offer.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  res:
-                    type: string
-                    description: The result of the transaction.
-              example:
-                res: "tesSUCCESS"
-        '400':
-          description: Missing required `nft_offer_index` or `seed` in the request body.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-              example:
-                error: "Missing fields"
-        '500':
-          description: Internal server error when accepting the sell offer.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-              example:
-                error: "Error when accepting sell offer"
-
-  /api/rwa/cancel-sell-offer:
-    post:
-      summary: Cancel a sell offer for an RWA token
-      tags:
-        - OfferRWAs
-      description: Cancels an existing sell offer for an RWA token by its offer ID.
-      security:
-        - bearerAuth: []  # Requires JWT token
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - tokenOfferId
-                - seed
-              properties:
-                tokenOfferId:
-                  type: string
-                  description: The ID of the sell offer to be canceled.
-                seed:
-                  type: string
-                  description: The seed of the wallet used to sign the transaction.
-            example:
-              tokenOfferId: "offer123"
-              seed: "s████████████████████████████"
-      responses:
-        '200':
-          description: Successfully canceled the sell offer.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    description: Indicates whether the cancellation was successful.
-                  transaction:
-                    type: string
-                    description: The result of the transaction.
-              example:
-                success: true
-                transaction: "tesSUCCESS"
-        '400':
-          description: Missing required `tokenOfferId` in the request body.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-              example:
-                error: "Missing fields"
-        '500':
-          description: Internal server error when canceling the sell offer.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-              example:
-                error: "Failed to cancel offer"
-
+  description: API for managing Real World Assets on XRPL
 
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT  # Specifies that the token format is JWT
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/auth/connect-wallet:
+    post:
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                address:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      default: 'response'
+                    result:
+                      type: object
+                      properties:
+                        address:
+                          type: string
+      responses:
+        200:
+          description: Wallet connected successfully
+
+  /api/rwa/create:
+    post:
+      tags: [RWA]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                valuation:
+                  type: number
+                location:
+                  type: string
+                size:
+                  type: string
+                nftId:
+                  type: string
+      responses:
+        200:
+          description: RWA created successfully
+
+  /api/rwa/all:
+    get:
+      tags: [RWA]
+      responses:
+        200:
+          description: List all RWAs except owned ones
+
+  /api/rwa/my-assets:
+    get:
+      tags: [RWA]
+      responses:
+        200:
+          description: List user's RWAs
+
+  /api/rwa/list-buy-offers:
+    post:
+      tags: [Offers]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tokenId:
+                  type: string
+      responses:
+        200:
+          description: List buy offers for token
+
+  /api/rwa/list-sell-offers:
+    post:
+      tags: [Offers]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tokenID:
+                  type: string
+      responses:
+        200:
+          description: List sell offers for token
+
+  /api/rwa/accept-buy-offer:
+    post:
+      tags: [Offers]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tokenId:
+                  type: string
+                walletOwnerBuyRequest:
+                  type: string
+      responses:
+        200:
+          description: Buy offer accepted
+
+  /api/rwa/accept-sell-offer:
+    post:
+      tags: [Offers]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tokenId:
+                  type: string
+      responses:
+        200:
+          description: Sell offer accepted
+
+  /api/rwa/get-balance:
+    get:
+      tags: [Wallet]
+      responses:
+        200:
+          description: Get wallet XRP balance
