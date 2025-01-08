@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getPublicKey } from "@gemwallet/api"
+import { isInstalled, getPublicKey } from "@gemwallet/api"
 
 const ProfileInfo = () => {
   const [adress, setAdress] = useState(null);
@@ -13,9 +13,22 @@ const ProfileInfo = () => {
 
   const fetchBalance = async () => {
     try {
-      const response = await getPublicKey();
-      setAdress(response.result.address) 
-      setpublicKey(response.result.publicKey)     
+      isInstalled().then(response => {
+        if (response.result.isInstalled) {
+          const token = localStorage.getItem('token');
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          setAdress(payload.walletAddress.result.address) 
+          getPublicKey().then((response) => {
+            if (response?.type !== "reject") {
+              setpublicKey(response.result.publicKey);
+            } else {
+              setError('You refused the connection with GemWallets')
+            }
+          })
+        } else {
+          setError('You don\'t have the extension of GemWallets !!!')
+        }
+      })
     } catch (err) {
       console.log(err)
       setError('Error connecting to wallet');
