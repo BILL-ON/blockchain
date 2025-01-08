@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import xrp from '../assets/xrp.png'
+import SmallWalletBalance from './getBalanceSmall';
 
 function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [balance, setBalance] = useState(0);
 
   useEffect(() => {
     // Check for token on component mount and token changes
@@ -52,8 +55,15 @@ function Navbar() {
         ) : (
           // Links for authenticated users
           <>
+            <div style={{ display: "flex", textAlign: 'center', alignItems: 'center', gap: "8px", padding: "8px", borderRadius: "16px", borderWidth: '1px', borderColor: "#000000", borderStyle: 'solid', fontSize: "24px" }}>
+              <SmallWalletBalance/>
+              <img src={xrp} height={20} width={20}/>
+            </div>
             <Link to="/createRWA" style={{ textDecoration: 'none', color: 'black' }}>
               Create RWA
+            </Link>
+            <Link to="/Profile" style={{ textDecoration: 'none', color: 'black' }}>
+              My Profile
             </Link>
             <Link to="/myassets" style={{ textDecoration: 'none', color: 'black' }}>
               My Assets

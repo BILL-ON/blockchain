@@ -10,6 +10,7 @@ import Login from './components/Login';
 import Dashboard from './pages/Marketplace/Dashboard';
 import Faq from './pages/Faq'
 import Footer from './components/Footer';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/createRWA" element={<CreateRWA />} />
             <Route path="/Dashboard" element={<Dashboard />} />
+            <Route path="/Profile" element={<Profile />} />
             <Route path="/Faq" element={<Faq />} />
           </Routes>
         </div>
